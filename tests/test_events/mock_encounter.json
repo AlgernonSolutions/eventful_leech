@@ -1,0 +1,12 @@
+{
+  "source": {
+    "id_source": "Algernon",
+    "encounter_id": 12345,
+    "provider_id": 1001,
+    "patient_id": 2002,
+    "encounter_type": "Community Support",
+    "encounter_datetime_in": "2019-01-01T13:30:00",
+    "encounter_datetime_out": "2019-01-01T14:30:00",
+    "documentation": "<html>some html document</html>"
+  }
+}

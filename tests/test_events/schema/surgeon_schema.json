@@ -1,0 +1,202 @@
+{
+  "vertex": [
+    {
+      "vertex_name": "Patient",
+      "vertex_properties": [
+        {
+          "property_name": "patient_id",
+          "property_data_type": "Number",
+          "is_id_value": true
+        },
+        {
+          "property_name": "id_source",
+          "property_data_type": "String"
+        },
+        {
+          "property_name": "last_name",
+          "property_data_type": "String",
+          "sensitive": true
+        },
+        {
+          "property_name": "first_name",
+          "property_data_type": "String",
+          "sensitive": true
+        }
+      ],
+      "identifier_stem": [
+        "id_source"
+      ],
+      "internal_id_key": [
+        "object_type",
+        "id_source",
+        "patient_id"
+      ],
+      "indexes": [],
+      "extract": [],
+      "rules": {
+
+      }
+    },
+    {
+      "vertex_name": "Provider",
+      "vertex_properties": [
+        {
+          "property_name": "provider_id",
+          "property_data_type": "Number",
+          "is_id_value": true
+        },
+        {
+          "property_name": "id_source",
+          "property_data_type": "String"
+        }
+      ],
+      "identifier_stem": [
+        "id_source"
+      ],
+      "internal_id_key": [
+        "object_type",
+        "id_source",
+        "provider_id"
+      ],
+      "indexes": [],
+      "extract": [],
+      "rules": {
+
+      }
+    },
+    {
+      "vertex_name": "Encounter",
+      "vertex_properties": [
+        {
+          "property_name": "encounter_id",
+          "property_data_type": "Number",
+          "is_id_value": true
+        },
+        {
+          "property_name": "provider_id",
+          "property_data_type": "Number"
+        },
+        {
+          "property_name": "patient_id",
+          "property_data_type": "Number"
+        },
+        {
+          "property_name": "encounter_type",
+          "property_data_type": "String"
+        },
+        {
+          "property_name": "encounter_datetime_in",
+          "property_data_type": "DateTime"
+        },
+        {
+          "property_name": "encounter_datetime_out",
+          "property_data_type": "DateTime"
+        },
+        {
+          "property_name": "id_source",
+          "property_data_type": "String"
+        },
+        {
+          "property_name": "documentation",
+          "property_data_type": "String",
+          "stored": {
+            "storage_class": "s3",
+            "bucket_name_source": {
+              "source": "environment",
+              "environment_variable_name": "ENCOUNTER_BUCKET"
+            }
+          }
+        }
+      ],
+      "identifier_stem": [
+        "id_source"
+      ],
+      "internal_id_key": [
+        "object_type",
+        "id_source",
+        "encounter_id"
+      ],
+      "indexes": [],
+      "extract": [],
+      "rules": {
+        "linking_rules": [
+          {
+            "vertex_specifiers": [],
+            "inbound": [
+              {
+                "edge_type": "_provided_",
+                "target_type": "Provider",
+                "target_constants": [
+                  {
+                    "constant_name": "id_source",
+                    "constant_value": "source.id_source"
+                  }
+                ],
+                "target_specifiers": [
+                  {
+                    "specifier_type": "shared_property",
+                    "specifier_name": "provided",
+                    "shared_properties": [
+                      "id_source",
+                      "provider_id"
+                    ]
+                  }
+                ],
+                "if_absent": "create"
+              }
+            ],
+            "outbound": [
+              {
+                "edge_type": "_received_",
+                "target_type": "Patient",
+                "target_constants": [
+                  {
+                    "constant_name": "id_source",
+                    "constant_value": "source.id_source"
+                  }
+                ],
+                "target_specifiers": [
+                  {
+                    "specifier_type": "shared_property",
+                    "specifier_name": "received",
+                    "shared_properties": [
+                      "id_source",
+                      "patient_id"
+                    ]
+                  }
+                ],
+                "if_absent": "stub"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "edge": [
+    {
+      "edge_label": "_provided_",
+      "from": ["Provider"],
+      "to": ["Encounter"],
+      "edge_properties": [],
+      "internal_id_key": [
+        "from.internal_id",
+        "schema.edge_label",
+        "to.internal_id"
+      ],
+      "indexes": []
+    },
+    {
+      "edge_label": "_received_",
+      "from": ["Encounter"],
+      "to": ["Patient"],
+      "edge_properties": [],
+      "internal_id_key": [
+        "from.internal_id",
+        "schema.edge_label",
+        "to.internal_id"
+      ],
+      "indexes": []
+    }
+  ]
+}
