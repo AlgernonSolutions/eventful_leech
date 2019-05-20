@@ -96,8 +96,11 @@ Resources:
           -
             Effect: "Allow"
             Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-            Action: "kms:*"
+              AWS: [
+              !Sub "arn:aws:iam::${AWS::AccountId}:root",
+              !Sub 'arn:aws:sts::${AWS::AccountId}:assumed-role/CodeStarWorker-leechdev-CloudFormation/AWSCloudFormation'
+            Action:
+              - "kms:*"
             Resource: "*"
           -
             Effect: "Allow"
