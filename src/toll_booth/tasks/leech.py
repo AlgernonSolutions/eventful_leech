@@ -1,7 +1,7 @@
 import logging
 import os
 from decimal import Decimal
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Any
 
 from algernon import queued, ajson
 from algernon.aws import lambda_logged, Bullhorn
@@ -46,6 +46,23 @@ def _graph_cluster(source_vertex, identified_vertex, potential_edge):
 
 
 class LeechTasks:
+    @classmethod
+    def _leech(cls,
+               object_type: str,
+               extracted_data: Dict[str, Any]):
+        """Entry method for this block, formats data and redirects to generate_source_vertex
+
+        Args:
+            object_type:
+            extracted_data:
+
+        Returns:
+
+        """
+        schema = Schema.retrieve()
+        schema_entry = schema[object_type]
+        Announcer.announce_generate_source_vertex(schema, schema_entry, extracted_data)
+
     @classmethod
     def _generate_source_vertex(cls,
                                 schema: Schema,
@@ -164,16 +181,27 @@ class LeechTasks:
 
 
 class Announcer:
-    _topic_arn = os.environ.get('LEECH_LISTENER_ARN', None)
-    _vpc_topic_arn = os.environ.get('VPC_LEECH_LISTENER_ARN', None)
+    @classmethod
+    def _send_message(cls, message: Dict):
+        bullhorn = Bullhorn()
+        topic_arn = os.environ['LEECH_LISTENER_ARN']
+        bullhorn.publish('new_event', topic_arn, ajson.dumps(message))
 
     @classmethod
-    def _send_message(cls, message: Dict, is_vpc: bool = False):
-        bullhorn = Bullhorn()
-        topic_arn = cls._topic_arn
-        if is_vpc:
-            topic_arn = cls._vpc_topic_arn
-        bullhorn.publish('new_event', topic_arn, ajson.dumps(message))
+    def announce_generate_source_vertex(cls,
+                                        schema: Schema,
+                                        schema_entry: Union[SchemaVertexEntry, SchemaEdgeEntry],
+                                        extracted_data: Dict[str, Any]):
+        message = {
+            'task_name': 'generate_source_vertex',
+            'task_kwargs': {
+                'schema': schema,
+                'schema_entry': schema_entry,
+                'extracted_data': extracted_data,
+
+            }
+        }
+        cls._send_message(message)
 
     @classmethod
     def announce_check_for_existing_vertexes(cls,

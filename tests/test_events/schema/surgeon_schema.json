@@ -21,6 +21,11 @@
           "property_name": "first_name",
           "property_data_type": "String",
           "sensitive": true
+        },
+        {
+          "property_name": "dob",
+          "property_data_type": "DateTime",
+          "sensitive": true
         }
       ],
       "identifier_stem": [
@@ -162,6 +167,15 @@
                     "shared_properties": [
                       "id_source",
                       "patient_id"
+                    ]
+                  },
+                  {
+                    "specifier_name": "patient_data",
+                    "specifier_type": "extraction",
+                    "extracted_properties": [
+                      "last_name",
+                      "first_name",
+                      "dob"
                     ]
                   }
                 ],
