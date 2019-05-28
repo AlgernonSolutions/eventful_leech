@@ -1,10 +1,25 @@
+import pytest
+
+from toll_booth.tasks.leech import task
+
+
+@pytest.mark.tasks
+@pytest.mark.usefixtures('unit_environment')
 class TestTasks:
-    def test_generate_source_vertex(self, mock_generate_source_vertex_event, mock_context, mock_bullhorn_boto):
-        from src.toll_booth import task
-        results = task(mock_generate_source_vertex_event, mock_context)
-        for result in results:
-            from src.toll_booth import PotentialVertex
-            assert isinstance(result, PotentialVertex)
-            assert result.for_index
-            assert result.for_stub_index
-            assert result.identifier_stem
+    @pytest.mark.tasks_generate_source_vertex
+    def test_generate_source_vertex(self, source_vertex_task_integration_event, mock_context, mocks):
+        results = task(source_vertex_task_integration_event, mock_context)
+        assert results
+        assert mocks['bullhorn'].called
+        assert mocks['gql'].called
+
+    @pytest.mark.tasks_generate_potential_connections
+    def test_generate_potential_connections(self, potential_connections_integration_event, mock_context, mocks):
+        results = task(potential_connections_integration_event, mock_context)
+        assert results
+        assert mocks['bullhorn'].called
+
+    @pytest.mark.tasks_generate_potential_edge
+    def test_generate_potential_edge(self, generate_edge_integration_event, mock_context):
+        results = task(generate_edge_integration_event, mock_context)
+        assert results

@@ -6,7 +6,7 @@ from toll_booth.tasks import leech
 
 
 @pytest.mark.tasks_integration
-@pytest.mark.usefixtures('dev_s3_stored_data', 'mock_bullhorn_boto')
+@pytest.mark.usefixtures('dev_s3_stored_data', 'mock_bullhorn_boto', 'integration_environment')
 class TestTasks:
     def test_generate_source_vertex(self, source_vertex_task_integration_event, mock_context):
         os.environ['LEECH_LISTENER_ARN'] = 'some_arn'

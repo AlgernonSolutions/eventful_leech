@@ -1,6 +1,6 @@
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Dict
 
-from toll_booth.obj.data_objects.graph_objects import PotentialVertex
+from toll_booth.obj.data_objects.graph_objects import VertexData
 from toll_booth.obj.regulators import ObjectRegulator, EdgeRegulator
 from toll_booth.obj.schemata.rules import VertexLinkRuleEntry
 from toll_booth.obj.schemata.schema import Schema
@@ -12,7 +12,7 @@ class RuleArbiter:
 
     """
     def __init__(self,
-                 source_vertex: PotentialVertex,
+                 source_vertex: VertexData,
                  schema: Schema,
                  schema_entry: Union[SchemaVertexEntry, SchemaEdgeEntry]):
         self._schema_entry = schema_entry
@@ -32,7 +32,7 @@ class RuleArbiter:
     def schema_entry(self):
         return self._schema_entry
 
-    def process_rules(self, extracted_data: dict) -> [PotentialVertex]:
+    def process_rules(self, extracted_data: Dict) -> List[Tuple[VertexData, VertexLinkRuleEntry]]:
         """
 
         Args:
@@ -50,7 +50,7 @@ class RuleArbiter:
                 continue
             for rule_entry in rule_set.rules:
                 executor = ArbiterExecutor(self, rule_entry)
-                vertexes.extend(executor.generate_potential_vertexes(extracted_data))
+                vertexes.append(executor.generate_potential_vertexes(extracted_data))
         return vertexes
 
     @staticmethod
@@ -83,7 +83,8 @@ class ArbiterExecutor:
     def if_missing(self):
         return self._rule_entry.if_absent
 
-    def generate_potential_vertexes(self, extracted_data: dict) -> List[Tuple[PotentialVertex, VertexLinkRuleEntry]]:
+    def generate_potential_vertexes(self,
+                                    extracted_data: Dict) -> Tuple[VertexData, VertexLinkRuleEntry]:
         """
 
         Args:
@@ -94,7 +95,7 @@ class ArbiterExecutor:
         """
         target_specifiers = self._rule_entry.target_specifiers
         target_constants = self.derive_target_constants(self._rule_entry.target_constants)
-        specifiers = []
+        specifiers = {}
         for specifier_executor in target_specifiers:
             specifier_kwargs = {
                 'extracted_data': extracted_data,
@@ -105,11 +106,11 @@ class ArbiterExecutor:
             }
             generated_specifiers = specifier_executor.generate_specifiers(**specifier_kwargs)
             for generated_specifier in generated_specifiers:
-                specified_object_data = self._regulator.create_potential_vertex_data(generated_specifier)
-                specifiers.append((PotentialVertex(**specified_object_data), self._rule_entry))
-        return specifiers
+                specifiers.update(generated_specifier)
+        specified_vertex = self._regulator.create_potential_vertex_data(specifiers)
+        return specified_vertex, self._rule_entry
 
-    def derive_target_constants(self, target_constants: [dict]) -> {str: str}:
+    def derive_target_constants(self, target_constants: List[Dict]) -> Dict[str, str]:
         """
 
         Args:
@@ -124,7 +125,7 @@ class ArbiterExecutor:
             derived_constants[constant_name] = constant_value
         return derived_constants
 
-    def _derive_target_constant(self, constant_name, constant_value) -> (str, str):
+    def _derive_target_constant(self, constant_name, constant_value) -> Tuple[str, str]:
         """
 
         Args:

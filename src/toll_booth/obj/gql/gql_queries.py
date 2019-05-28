@@ -72,7 +72,7 @@ GRAPH_VERTEX = '''
     }
 '''
 GRAPH_CLUSTER = '''
-    mutation graphCluster($source_vertex: InputVertex!, $target_vertex: InputVertex!, #potential_edge: InputEdge!){
+    mutation graphCluster($source_vertex: InputVertex!, $target_vertex: InputVertex!, $potential_edge: InputEdge!){
         addVertex(vertex: $source_vertex)
         addVertex(vertex: $target_vertex)
         addEdge(edge: $potential_edge)

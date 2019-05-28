@@ -132,7 +132,7 @@ class FunctionSpecifier(TargetSpecifier):
         return self._extracted_properties
 
     def generate_specifiers(self, **kwargs):
-        from src.toll_booth import specifiers
+        from toll_booth.obj.schemata import specifiers
         function_name = self._function_name
         try:
             specifier_function = getattr(specifiers, function_name)

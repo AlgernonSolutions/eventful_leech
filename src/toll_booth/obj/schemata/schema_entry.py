@@ -1,4 +1,8 @@
+from typing import Dict
+
 from algernon import AlgObject
+
+from toll_booth.obj.schemata.entry_property import SchemaPropertyEntry
 
 
 class SchemaEntry(AlgObject):
@@ -85,7 +89,7 @@ class SchemaVertexEntry(SchemaEntry):
         return self._vertex_name
 
     @property
-    def vertex_properties(self):
+    def vertex_properties(self) -> Dict[str, SchemaPropertyEntry]:
         return self.entry_properties
 
     @property

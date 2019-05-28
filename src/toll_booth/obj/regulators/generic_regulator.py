@@ -6,6 +6,7 @@ from typing import Union, Dict, Any
 import dateutil
 
 from toll_booth.obj.data_objects import MissingObjectProperty, InternalId, IdentifierStem
+from toll_booth.obj.data_objects.graph_objects import VertexData
 from toll_booth.obj.data_objects.stored_data import S3StoredData
 from toll_booth.obj.schemata.entry_property import SchemaPropertyEntry, EdgePropertyEntry
 from toll_booth.obj.schemata.schema_entry import SchemaVertexEntry, SchemaEdgeEntry
@@ -113,10 +114,10 @@ class ObjectRegulator:
         return self._schema_entry
 
     def create_potential_vertex_data(self,
-                                     object_data: dict,
+                                     object_data: Dict,
                                      internal_id: InternalId = None,
                                      identifier_stem: IdentifierStem = None,
-                                     id_value: Union[str, int, float, Decimal] = None):
+                                     id_value: Union[str, int, float, Decimal] = None) -> VertexData:
         """
 
         Args:
@@ -136,13 +137,14 @@ class ObjectRegulator:
         if id_value is None:
             id_value = self._create_id_value(object_properties)
         object_properties = self._convert_object_properties(internal_id, object_properties)
-        return {
+        vertex_data = VertexData.from_json({
             'object_type': self._schema_entry.object_type,
             'internal_id': internal_id,
             'identifier_stem': identifier_stem,
             'id_value': id_value,
             'object_properties': object_properties,
-        }
+        })
+        return vertex_data
 
     def _standardize_object_properties(self, object_data: Dict[str, Any]):
         returned_properties = {}
@@ -152,7 +154,6 @@ class ObjectRegulator:
             except KeyError:
                 returned_properties[property_name] = MissingObjectProperty()
                 continue
-
             test_property = _set_property_data_type(property_name, entry_property, test_property)
             returned_properties[property_name] = test_property
         return returned_properties

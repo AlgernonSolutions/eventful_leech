@@ -204,7 +204,24 @@
       "edge_label": "_received_",
       "from": ["Encounter"],
       "to": ["Patient"],
-      "edge_properties": [],
+      "edge_properties": [
+        {
+          "property_name": "encounter_type",
+          "property_data_type": "String",
+          "property_source": {
+            "source_type": "source_vertex",
+            "vertex_property_name": "encounter_type"
+          }
+        },
+        {
+          "property_name": "encounter_datetime_in",
+          "property_data_type": "DateTime",
+          "property_source": {
+            "source_type": "source_vertex",
+            "vertex_property_name": "encounter_datetime_in"
+          }
+        }
+      ],
       "internal_id_key": [
         "from.internal_id",
         "schema.edge_label",

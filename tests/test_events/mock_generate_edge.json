@@ -1,0 +1,147 @@
+{
+  "source_vertex": {
+    "object_type": "Encounter",
+    "internal_id": "e106ce52f848b1dda8da84eb0d11ba1c",
+    "identifier_stem": {
+      "data_type": "S",
+      "property_value": "#vertex#Encounter#{\"id_source\": \"PSI\"}#",
+      "property_name": "identifier_stem"
+    },
+    "id_value": {
+      "data_type": "N",
+      "property_name": "id_value",
+      "property_value": "2683350"
+    },
+    "object_properties": {
+      "local_properties": [
+        {
+          "data_type": "N",
+          "property_name": "encounter_id",
+          "property_value": "2683350"
+        },
+        {
+          "data_type": "N",
+          "property_name": "provider_id",
+          "property_value": "9268"
+        },
+        {
+          "data_type": "N",
+          "property_name": "patient_id",
+          "property_value": "1030211"
+        },
+        {
+          "data_type": "S",
+          "property_name": "encounter_type",
+          "property_value": "Rehab Day Encounter"
+        },
+        {
+          "data_type": "DT",
+          "property_name": "encounter_datetime_in",
+          "property_value": "2018-05-25T08:15:00+0000"
+        },
+        {
+          "data_type": "DT",
+          "property_name": "encounter_datetime_out",
+          "property_value": "2018-05-25T11:30:00+0000"
+        },
+        {
+          "data_type": "S",
+          "property_name": "id_source",
+          "property_value": "PSI"
+        }
+      ],
+      "stored_properties": [
+        {
+          "data_type": "S",
+          "property_name": "documentation",
+          "storage_class": "s3",
+          "storage_uri": "s3://algernonsolutions-encounters-dev/e106ce52f848b1dda8da84eb0d11ba1c.documentation"
+        }
+      ]
+    }
+  },
+  "potential_vertex": {
+    "object_type": "Patient",
+    "internal_id": "e106ce52f848b1dda8da84eb0d11ba1c",
+    "identifier_stem": {
+      "data_type": "S",
+      "property_value": "#vertex#Patient#{\"id_source\": \"PSI\"}#",
+      "property_name": "identifier_stem"
+    },
+    "id_value": {
+      "data_type": "N",
+      "property_name": "id_value",
+      "property_value": "1030211"
+    },
+    "object_properties": {
+      "local_properties": [
+        {
+          "data_type": "N",
+          "property_name": "patient_id",
+          "property_value": "1030211"
+        },
+        {
+          "data_type": "S",
+          "property_name": "last_name",
+          "property_value": "Doe"
+        },
+        {
+          "data_type": "DT",
+          "property_name": "dob",
+          "property_value": "1980-03-25T00:00:00+0000"
+        },
+        {
+          "data_type": "S",
+          "property_name": "first_name",
+          "property_value": "John"
+        }
+      ]
+    }
+  },
+  "extracted_data": {
+    "source": {
+      "patient_id": {
+        "_alg_class": "decimal",
+        "value": "1030211"
+      },
+      "provider_id": {
+        "_alg_class": "decimal",
+        "value": "9268"
+      },
+      "id_source": "PSI",
+      "encounter_id": {
+        "_alg_class": "decimal",
+        "value": "2683350"
+      },
+      "documentation": "<html>some_html</html>",
+      "encounter_datetime_in": {
+        "_alg_class": "datetime",
+        "value": {
+          "tz": null,
+          "timestamp": 1527250500.0
+        }
+      },
+      "encounter_datetime_out": {
+        "_alg_class": "datetime",
+        "value": {
+          "tz": null,
+          "timestamp": 1527262200.0
+        }
+      },
+      "encounter_type": "Rehab Day Encounter"
+    },
+    "patient_data": [
+      {
+        "last_name": "Doe",
+        "first_name": "John",
+        "dob": {
+          "_alg_class": "datetime",
+          "value": {
+            "tz": null,
+            "timestamp": 529646400.0
+          }
+        }
+      }
+    ]
+}
+}

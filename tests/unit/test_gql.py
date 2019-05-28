@@ -1,13 +1,11 @@
 import os
 
 import pytest
-import rapidjson
 
 from toll_booth.obj.gql.gql_client import GqlSearchProperty, GqlClient
 
-gql_url = 'yiawofjaffgrvlzyg2f6xnjzty.appsync-api.us-east-1.amazonaws.com'
 os.environ['DEBUG'] = 'True'
-os.environ['GQL_API_KEY'] = 'da2-zcvdidxqqjelni6jaouejuuusm'
+os.environ['GQL_API_KEY'] = 'da2-bjjye3kl35ekvitmxfxuslsviu'
 os.environ['SENSITIVE_TABLE'] = 'Sensitives'
 
 
@@ -25,5 +23,4 @@ class TestGql:
             GqlSearchProperty('id_source', 'S', 'Algernon')
         ]
         results = gql_client.check_for_existing_vertexes(object_type, object_properties)
-        parsed_results = rapidjson.loads(results)
-        assert parsed_results
+        assert results

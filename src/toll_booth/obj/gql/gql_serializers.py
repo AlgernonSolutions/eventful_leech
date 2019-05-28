@@ -1,11 +1,8 @@
-import importlib
 import json
 from copy import deepcopy
-from datetime import datetime
 from decimal import Decimal
 
 import dateutil
-import pytz
 
 from toll_booth.obj.data_objects import SensitiveData
 from toll_booth.obj.data_objects.stored_data import S3StoredData
@@ -23,7 +20,7 @@ def _set_object_property_value(data_type, obj_value):
     raise NotImplementedError(f'do not understand how to parse {obj_value} with data_type: {data_type}')
 
 
-class GqlDecoder(json.JSONDecoder):
+class GqlResolver(json.JSONDecoder):
     def __init__(self, *args, **kwargs):
         json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
 
@@ -51,3 +48,22 @@ class GqlDecoder(json.JSONDecoder):
             if storage_class == 's3':
                 s3_data = S3StoredData(data_type, storage_class, storage_uri)
                 return _set_object_property_value(data_type, s3_data.retrieve())
+        return obj
+
+
+class GqlDecoder(json.JSONDecoder):
+    def __init__(self, *args, **kwargs):
+        json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
+
+    @staticmethod
+    def object_hook(obj):
+        if '__typename' not in obj:
+            return obj
+        alg_class = obj['__typename']
+        obj_value = deepcopy(obj)
+        del (obj_value['__typename'])
+        if alg_class == 'ObjectProperty':
+            object_property = obj_value['property_value']
+            object_property['property_name'] = obj_value['property_name']
+            return object_property
+        return obj
