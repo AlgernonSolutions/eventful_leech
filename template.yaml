@@ -29,19 +29,6 @@ Conditions:
   DevDeploy: !Equals [!Ref IsDev, 'True']
   ProdDeploy: !Equals [!Ref IsDev, 'False']
 
-Globals:
-  Function:
-    Runtime: python3.6
-    Timeout: 300
-    Tracing: Active
-    Layers:
-      - !Ref LayerArn
-    Environment:
-      Variables:
-        DEBUG: !Ref IsDev
-        GQL_API_KEY: !If [DevDeploy, !Ref DevApiKey, '']
-        SENSITIVES_TABLE_NAME: !Ref SensitivesTableName
-        GRAPH_GQL_ENDPOINT: !Ref DataGqlEndpoint
 
 Resources:
   Task:
@@ -49,13 +36,22 @@ Resources:
     Properties:
       Handler: toll_booth.tasks.leech.task
       Role: !ImportValue dev-worker-role-arn
+      Runtime: python3.7
+      Tracing: Active
+      Timeout: 900
       CodeUri: src/
+      Environment:
+        Variables:
+          DEBUG: !Ref IsDev
+          GQL_API_KEY: !If [DevDeploy, !Ref DevApiKey, '']
+          SENSITIVES_TABLE_NAME: !Ref SensitivesTableName
+          GRAPH_GQL_ENDPOINT: !Ref DataGqlEndpoint
   Oyster:
     Type: AWS::Serverless::Application
     Properties:
       Location:
         ApplicationId: arn:aws:serverlessrepo:us-east-1:726075243133:applications/AlgernonOyster
-        SemanticVersion: 0.0.23
+        SemanticVersion: 0.0.37
       Parameters:
         IsDev: !Ref IsDev
         OysterBedName: 'AlgernonsOyster'

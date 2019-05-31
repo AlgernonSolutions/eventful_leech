@@ -13,15 +13,23 @@ from toll_booth.obj.schemata.schema import Schema
 
 @pytest.fixture
 def mocks(request):
+    patches = []
+    mocks = {}
+    indicated_patches = {}
     test_name = request.node.originalname
     if test_name == 'test_generate_source_vertex':
-        s3_mock = mock_objs.mock_s3_stored_data()
-        return {
-            's3': s3_mock,
-            'gql': mock_objs.gql_client_notary(),
-            'bullhorn': mock_objs.tasks_bullhorn()
+        indicated_patches = {
+            's3': mock_objs.mock_s3_stored_data,
+            'gql': mock_objs.gql_client_notary,
+            'bullhorn': mock_objs.tasks_bullhorn
         }
-    return
+    for mock_name, mock_generator in indicated_patches.items():
+        mock_obj, patch_obj = mock_generator()
+        mocks[mock_name] = mock_obj
+        patches.append(patch_obj)
+    yield mocks
+    for patch_obj in patches:
+        patch_obj.stop()
 
 
 @pytest.fixture(params=[
@@ -37,7 +45,7 @@ def object_regulator_event(request):
 
 
 @pytest.fixture(params=[
-    ('mock_encounter', 'surgeon_schema', 'Encounter'),
+    ('mock_encounter_event', 'surgeon_schema', 'Encounter'),
     ('mock_patient', 'surgeon_schema', 'Patient'),
     ('mock_provider', 'surgeon_schema', 'Provider')
 ])
@@ -48,16 +56,18 @@ def source_vertex_task_integration_event(request):
     extracted_data = _read_test_event(params[0])
     event = {
         'task_name': 'generate_source_vertex',
+        'flow_id': 'some_flow_id',
         'task_kwargs': {
             'schema': schema,
             'schema_entry': schema_entry,
             'extracted_data': extracted_data
         }
     }
-    event_string = ajson.dumps(event)
-    message_object = {'Message': event_string}
-    body_object = {'body': ajson.dumps(message_object)}
-    return {'Records': [body_object]}
+    return event
+    # event_string = ajson.dumps(event)
+    # message_object = {'Message': event_string}
+    # body_object = {'body': ajson.dumps(message_object)}
+    # return {'Records': [body_object]}
 
 
 @pytest.fixture(params=[

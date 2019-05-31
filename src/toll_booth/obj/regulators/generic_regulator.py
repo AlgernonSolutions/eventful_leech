@@ -137,7 +137,7 @@ class ObjectRegulator:
         if id_value is None:
             id_value = self._create_id_value(object_properties)
         object_properties = self._convert_object_properties(internal_id, object_properties)
-        vertex_data = VertexData.from_json({
+        vertex_data = VertexData.from_source_data({
             'object_type': self._schema_entry.object_type,
             'internal_id': internal_id,
             'identifier_stem': identifier_stem,

@@ -1,9 +1,9 @@
 import logging
 import os
 from decimal import Decimal
-from typing import Union, List, Dict, Any, Tuple
+from typing import Union, List, Dict, Any
 
-from algernon import queued, ajson
+from algernon import ajson
 from algernon.aws import lambda_logged, Bullhorn
 
 from toll_booth.obj.data_objects import InternalId, IdentifierStem
@@ -17,16 +17,20 @@ from toll_booth.obj.schemata.schema import Schema
 from toll_booth.obj.schemata.schema_entry import SchemaEdgeEntry, SchemaVertexEntry
 
 
+def _rebuild_event(original_event):
+    return ajson.loads(ajson.dumps(original_event))
+
+
 @lambda_logged
-@queued
 def task(event, context):
     logging.info(f'started a call for a borg task, event: {event}, context: {context}')
+    event = _rebuild_event(event)
     task_name = event['task_name']
     task_kwargs = event.get('task_kwargs', {})
     if task_kwargs is None:
         task_kwargs = {}
     task_function = getattr(LeechTasks, f'_{task_name}')
-    results = task_function(**task_kwargs)
+    results = task_function(**task_kwargs, flow_id=event['flow_id'])
     logging.info(f'completed a call for borg task, event: {event}, results: {results}')
     return ajson.dumps(results)
 
@@ -52,29 +56,37 @@ def _graph_cluster(source_vertex: VertexData,
 class LeechTasks:
     @classmethod
     def _leech(cls,
+               flow_id: str,
                object_type: str,
-               extracted_data: Dict[str, Any]) -> None:
+               extracted_data: Dict[str, Any],
+               **kwargs) -> Dict[str, Union[str, Any]]:
         """Entry method for this block, formats data and redirects to generate_source_vertex
 
         Args:
             object_type:
             extracted_data:
-
+            kwargs:
         Returns:
 
         """
         schema = Schema.retrieve()
         schema_entry = schema[object_type]
-        Announcer.announce_generate_source_vertex(schema, schema_entry, extracted_data)
+        Announcer.announce_generate_source_vertex(flow_id, schema, schema_entry, extracted_data)
+        return {
+            'schema': schema,
+            'schema_entry': schema_entry,
+            'extracted_data': extracted_data
+        }
 
     @classmethod
     def _generate_source_vertex(cls,
+                                flow_id: str,
                                 schema: Schema,
                                 schema_entry: SchemaVertexEntry,
                                 extracted_data: Dict[str, Any],
                                 internal_id: InternalId = None,
                                 identifier_stem: IdentifierStem = None,
-                                id_value: Union[str, int, float, Decimal] = None) -> VertexData:
+                                id_value: Union[str, int, float, Decimal] = None, **kwargs) -> Dict[str, Any]:
         """Generates a source vertex from data extracted from a remote source per a schema entry
 
         Args:
@@ -91,15 +103,22 @@ class LeechTasks:
         object_data = extracted_data['source']
         vertex_data = regulator.create_potential_vertex_data(object_data, internal_id, identifier_stem, id_value)
         _graph_vertex(vertex_data)
-        Announcer.announce_derive_potential_connections(vertex_data, schema, schema_entry, extracted_data)
-        return vertex_data
+        Announcer.announce_derive_potential_connections(flow_id, vertex_data, schema, schema_entry, extracted_data)
+        return {
+            'source_vertex': vertex_data,
+            'schema': schema,
+            'schema_entry': schema_entry,
+            'extracted_data': extracted_data
+        }
 
     @classmethod
     def _derive_potential_connections(cls,
+                                      flow_id: str,
                                       schema: Schema,
                                       schema_entry: SchemaVertexEntry,
                                       source_vertex: VertexData,
-                                      extracted_data: Dict) -> List[Tuple[VertexData, VertexLinkRuleEntry]]:
+                                      extracted_data: Dict,
+                                      **kwargs) -> List[Dict[str, Union[VertexData, VertexLinkRuleEntry]]]:
         """Generate a list of PotentialVertex objects indicated by the schema_entry
 
         Args:
@@ -113,21 +132,32 @@ class LeechTasks:
         """
         arbiter = RuleArbiter(source_vertex, schema, schema_entry)
         potential_vertexes = arbiter.process_rules(extracted_data)
+        results = []
         for vertex_entry in potential_vertexes:
             vertex = vertex_entry[0]
             rule_entry = vertex_entry[1]
             Announcer.announce_check_for_existing_vertexes(
-                schema, source_vertex, vertex, rule_entry, schema_entry, extracted_data)
-        return potential_vertexes
+                flow_id, schema, source_vertex, vertex, rule_entry, schema_entry, extracted_data)
+            results.append({
+                'schema': schema,
+                'source_vertex': source_vertex,
+                'potential_vertex': vertex,
+                'rule_entry': rule_entry,
+                'schema_entry': schema_entry,
+                'extracted_data': extracted_data,
+
+            })
+        return results
 
     @classmethod
     def _check_for_existing_vertexes(cls,
+                                     flow_id: str,
                                      schema: Schema,
                                      schema_entry: SchemaVertexEntry,
                                      source_vertex: VertexData,
                                      potential_vertex: VertexData,
                                      rule_entry: VertexLinkRuleEntry,
-                                     extracted_data: Dict) -> List[VertexData]:
+                                     extracted_data: Dict, **kwargs) -> List[Dict]:
         """check to see if vertex specified by potential_vertex and rule_entry exists
 
         Args:
@@ -138,21 +168,41 @@ class LeechTasks:
             a tuple containing a list of vertexes to connect the source_vertex to
 
         """
+        results = []
         edge_schema_entry = schema[rule_entry.edge_type]
         if potential_vertex.is_schema_complete(schema_entry):
             Announcer.announce_generate_potential_edge(
-                source_vertex, potential_vertex, rule_entry, edge_schema_entry, extracted_data)
-            return [potential_vertex]
+                flow_id, source_vertex, potential_vertex, rule_entry, edge_schema_entry, extracted_data)
+            return [{
+                'source_vertex': source_vertex,
+                'identified_vertex': potential_vertex,
+                'rule_entry': rule_entry,
+                'schema_entry': edge_schema_entry,
+                'extracted_data': extracted_data
+            }]
         found_vertexes = _find_existing_vertexes(potential_vertex.object_type, potential_vertex.local_properties)
         if found_vertexes:
             for identified_vertex in found_vertexes:
                 Announcer.announce_generate_potential_edge(
-                    source_vertex, identified_vertex, rule_entry, edge_schema_entry, extracted_data)
-            return found_vertexes
+                    flow_id, source_vertex, identified_vertex, rule_entry, edge_schema_entry, extracted_data)
+                results.append({
+                    'source_vertex': source_vertex,
+                    'identified_vertex': identified_vertex,
+                    'rule_entry': rule_entry,
+                    'schema_entry': edge_schema_entry,
+                    'extracted_data': extracted_data
+                })
+            return results
         if rule_entry.is_stub:
             Announcer.announce_generate_potential_edge(
-                source_vertex, potential_vertex, rule_entry, edge_schema_entry, extracted_data)
-            return [potential_vertex]
+                flow_id, source_vertex, potential_vertex, rule_entry, edge_schema_entry, extracted_data)
+            return [{
+                'source_vertex': source_vertex,
+                'identified_vertex': potential_vertex,
+                'rule_entry': rule_entry,
+                'schema_entry': edge_schema_entry,
+                'extracted_data': extracted_data
+            }]
         return []
 
     @classmethod
@@ -161,7 +211,7 @@ class LeechTasks:
                                  source_vertex: VertexData,
                                  identified_vertex: VertexData,
                                  rule_entry: VertexLinkRuleEntry,
-                                 extracted_data: Dict) -> EdgeData:
+                                 extracted_data: Dict, **kwargs) -> EdgeData:
         """Generate a PotentialEdge object between a known source object and a potential vertex
 
         Args:
@@ -191,11 +241,13 @@ class Announcer:
 
     @classmethod
     def announce_generate_source_vertex(cls,
+                                        flow_id: str,
                                         schema: Schema,
                                         schema_entry: SchemaVertexEntry,
                                         extracted_data: Dict[str, Any]) -> None:
         message = {
             'task_name': 'generate_source_vertex',
+            'flow_id': f'{flow_id}#generate_source_vertex',
             'task_kwargs': {
                 'schema': schema,
                 'schema_entry': schema_entry,
@@ -207,6 +259,7 @@ class Announcer:
 
     @classmethod
     def announce_check_for_existing_vertexes(cls,
+                                             flow_id: str,
                                              schema: Schema,
                                              source_vertex: VertexData,
                                              vertex: VertexData,
@@ -215,6 +268,7 @@ class Announcer:
                                              extracted_data: Dict[str, Any]) -> None:
         message = {
             'task_name': 'check_for_existing_vertexes',
+            'flow_id': f'{flow_id}#check_for_existing_vertexes-{source_vertex}-{rule_entry}',
             'task_kwargs': {
                 'schema': schema,
                 'source_vertex': source_vertex,
@@ -229,12 +283,14 @@ class Announcer:
 
     @classmethod
     def announce_derive_potential_connections(cls,
+                                              flow_id: str,
                                               source_vertex: VertexData,
                                               schema: Schema,
                                               schema_entry: Union[SchemaVertexEntry, SchemaEdgeEntry],
                                               extracted_data: Dict[str, Any]) -> None:
         message = {
             'task_name': 'derive_potential_connections',
+            'flow_id': f'{flow_id}#derive_potential_connections',
             'task_kwargs': {
                 'source_vertex': source_vertex,
                 'schema': schema,
@@ -246,6 +302,7 @@ class Announcer:
 
     @classmethod
     def announce_generate_potential_edge(cls,
+                                         flow_id: str,
                                          source_vertex: VertexData,
                                          identifier_vertex: VertexData,
                                          rule_entry: VertexLinkRuleEntry,
@@ -253,6 +310,7 @@ class Announcer:
                                          extracted_data: Dict[str, Any]) -> None:
         message = {
             'task_name': 'generate_potential_edge',
+            'flow_id': f'{flow_id}#generate_potential_edge-{source_vertex}-{identifier_vertex}',
             'task_kwargs': {
                 'source_vertex': source_vertex,
                 'identified_vertex': identifier_vertex,
