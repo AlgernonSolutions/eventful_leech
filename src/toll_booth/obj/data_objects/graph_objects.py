@@ -156,6 +156,16 @@ class VertexData(AlgObject):
             'vertex_properties': self.vertex_properties
         }
 
+    @property
+    def is_identifier_stem_set(self):
+        try:
+            identifier_stem = IdentifierStem.from_raw(self.identifier_stem)
+            if not isinstance(identifier_stem, IdentifierStem):
+                return False
+            return True
+        except AttributeError:
+            return False
+
     def get_vertex_property(self, property_type, property_name) -> Dict[str, str]:
         object_properties = getattr(self, f'_{property_type}')
         for object_property in object_properties:
@@ -210,6 +220,9 @@ class VertexData(AlgObject):
         if not self._id_value != schema_entry.id_value_field:
             return False
         return True
+
+    def __str__(self):
+        return f'{self._object_type}-{self._internal_id}'
 
 
 class EdgeData(VertexData):
@@ -284,3 +297,6 @@ class EdgeData(VertexData):
             'target_vertex_internal_id': self._target_vertex_internal_id,
             'edge_properties': self.edge_properties
         }
+
+    def __str__(self):
+        return f"{self._source_vertex_internal_id}-{self.object_type}->{self._target_vertex_internal_id}"

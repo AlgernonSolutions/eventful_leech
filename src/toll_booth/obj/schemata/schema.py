@@ -51,8 +51,8 @@ class Schema(AlgObject):
             return default
 
     @classmethod
-    def retrieve(cls, **kwargs):
-        schema_writer = SchemaSnek(**kwargs)
+    def retrieve(cls, bucket_name, **kwargs):
+        schema_writer = SchemaSnek(bucket_name, **kwargs)
         json_schema = schema_writer.get_schema(**kwargs)
         vertex_entries, edge_entries = SchemaParer.parse(json_schema)
         return cls(vertex_entries, edge_entries)

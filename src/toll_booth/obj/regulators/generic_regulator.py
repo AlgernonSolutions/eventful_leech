@@ -66,14 +66,16 @@ def _generate_object_property(property_name: str,
                               property_value: Union[str, float, Decimal, int, datetime, None],
                               source_internal_id: str = None):
     data_type = type_map[entry_property.property_data_type]
+    if isinstance(property_value, MissingObjectProperty):
+        return 'missing', None
     if entry_property.sensitive:
         gql_entry = {
-            'data_type': entry_property.property_data_type,
+            'data_type': data_type,
             'property_name': property_name,
             'property_value': property_value,
             'source_internal_id': source_internal_id
         }
-        return 'sensitives_property', gql_entry
+        return 'sensitive_properties', gql_entry
     if entry_property.is_stored:
         storage_class = entry_property.stored['storage_class']
         if storage_class == 's3':
@@ -95,6 +97,8 @@ def _generate_object_property(property_name: str,
             return 'stored_properties', gql_entry
         raise NotImplementedError(f'can not store {entry_property} per storage_class: {storage_class},'
                                   f'this class is unknown to the system')
+    if isinstance(property_value, MissingObjectProperty):
+        return 'missing', None
     gql_entry = {
         'data_type': data_type,
         'property_name': property_name,
@@ -164,6 +168,8 @@ class ObjectRegulator:
             object_property = object_properties[property_name]
             property_type, property_value = _generate_object_property(
                 property_name, entry_property, object_property, internal_id)
+            if property_type == 'missing':
+                continue
             if property_type not in converted_properties:
                 converted_properties[property_type] = []
             converted_properties[property_type].append(property_value)

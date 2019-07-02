@@ -1,6 +1,6 @@
 import pytest
 
-from toll_booth.tasks.leech import task
+from toll_booth import handler
 from algernon import ajson
 
 
@@ -9,7 +9,7 @@ from algernon import ajson
 class TestTasks:
     @pytest.mark.tasks_generate_source_vertex
     def test_generate_source_vertex(self, source_vertex_task_integration_event, mock_context, mocks):
-        results = task(source_vertex_task_integration_event, mock_context)
+        results = handler(source_vertex_task_integration_event, mock_context)
         assert results
         parsed_results = ajson.loads(results)
         expected_keys = ['source_vertex', 'schema', 'schema_entry', 'extracted_data']
@@ -21,12 +21,18 @@ class TestTasks:
         assert mocks['gql'].called
 
     @pytest.mark.tasks_generate_potential_connections
-    def test_generate_potential_connections(self, potential_connections_integration_event, mock_context, mocks):
-        results = task(potential_connections_integration_event, mock_context)
+    def test_generate_potential_connections(self, potential_connections_unit_event, mock_context, mocks):
+        results = handler(potential_connections_unit_event, mock_context)
+        assert results
+        assert mocks['bullhorn'].called
+
+    @pytest.mark.tasks_check_for_existing_vertexes
+    def test_check_for_existing_vertexes(self, find_existing_vertexes, mock_context, mocks):
+        results = handler(find_existing_vertexes, mock_context)
         assert results
         assert mocks['bullhorn'].called
 
     @pytest.mark.tasks_generate_potential_edge
     def test_generate_potential_edge(self, generate_edge_integration_event, mock_context):
-        results = task(generate_edge_integration_event, mock_context)
+        results = handler(generate_edge_integration_event, mock_context)
         assert results

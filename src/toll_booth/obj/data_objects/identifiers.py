@@ -107,7 +107,8 @@ class IdentifierStem(AlgObject):
         return IdentifierStem(self._graph_type, self._object_type, paired_identifiers)
 
     def _string_paired_identifiers(self):
-        return json.dumps(self._paired_identifiers)
+        identifier = {x: str(y) for x, y in self._paired_identifiers.items()}
+        return json.dumps(identifier)
 
     def get(self, item):
         if item == 'graph_type':

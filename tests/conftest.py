@@ -1,13 +1,13 @@
 import json
 import os
 from os import path
-from unittest.mock import patch
 from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import pytest
 from algernon import ajson
 
-from tests.test_setup import mock_objs
+from test_setup import mock_objs
 from toll_booth.obj.schemata.schema import Schema
 
 
@@ -17,12 +17,17 @@ def mocks(request):
     mocks = {}
     indicated_patches = {}
     test_name = request.node.originalname
-    if test_name == 'test_generate_source_vertex':
+    if test_name in [
+        'test_generate_source_vertex',
+        'test_generate_potential_connections',
+        'test_check_for_existing_vertexes'
+    ]:
         indicated_patches = {
             's3': mock_objs.mock_s3_stored_data,
             'gql': mock_objs.gql_client_notary,
             'bullhorn': mock_objs.tasks_bullhorn
         }
+
     for mock_name, mock_generator in indicated_patches.items():
         mock_obj, patch_obj = mock_generator()
         mocks[mock_name] = mock_obj
@@ -45,9 +50,23 @@ def object_regulator_event(request):
 
 
 @pytest.fixture(params=[
-    ('mock_encounter_event', 'surgeon_schema', 'Encounter'),
+    ('leech_event', 'surgeon_schema', 'Encounter'),
+])
+def leech_integration_event(request):
+    params = request.param
+    event = _read_test_event(params[0])
+    event_string = ajson.dumps(event)
+    message_object = {'Message': event_string}
+    body_object = {'body': ajson.dumps(message_object)}
+    return {'Records': [body_object]}
+
+
+@pytest.fixture(params=[
+    ('mock_generate_source_vertex', 'surgeon_schema', 'Encounter'),
     ('mock_patient', 'surgeon_schema', 'Patient'),
-    ('mock_provider', 'surgeon_schema', 'Provider')
+    ('mock_provider', 'surgeon_schema', 'Provider'),
+    ('documentation_event', 'surgeon_schema', 'Documentation'),
+    ('documentation_field_event', 'surgeon_schema', 'DocumentationField'),
 ])
 def source_vertex_task_integration_event(request):
     params = request.param
@@ -56,18 +75,16 @@ def source_vertex_task_integration_event(request):
     extracted_data = _read_test_event(params[0])
     event = {
         'task_name': 'generate_source_vertex',
-        'flow_id': 'some_flow_id',
         'task_kwargs': {
             'schema': schema,
             'schema_entry': schema_entry,
             'extracted_data': extracted_data
         }
     }
-    return event
-    # event_string = ajson.dumps(event)
-    # message_object = {'Message': event_string}
-    # body_object = {'body': ajson.dumps(message_object)}
-    # return {'Records': [body_object]}
+    event_string = ajson.dumps(event)
+    message_object = {'Message': event_string}
+    body_object = {'body': ajson.dumps(message_object)}
+    return {'Records': [body_object]}
 
 
 @pytest.fixture(params=[
@@ -93,22 +110,18 @@ def source_vertex_task_deployment_event(request):
 
 
 @pytest.fixture(params=[
-    ('mock_potential_connections', 'surgeon_schema', 'Encounter')
+    ('mock_derive_potential_connections', 'surgeon_schema', 'Documentation')
 ])
-def potential_connections_integration_event(request):
-    from toll_booth.obj.data_objects.graph_objects import VertexData
+def potential_connections_unit_event(request):
     params = request.param
     schema_entry = _read_schema(params[1], params[2])
     schema = _read_schema(params[1])
     test_event = _read_test_event(params[0])
+    task_kwargs = ajson.loads(ajson.dumps(test_event))
+    task_kwargs.update({'schema': schema, 'schema_entry': schema_entry})
     event = {
         'task_name': 'derive_potential_connections',
-        'task_kwargs': {
-            'schema': schema,
-            'schema_entry': schema_entry,
-            'extracted_data': test_event['extracted_data'],
-            'source_vertex': VertexData.from_source_data(test_event['source_vertex'])
-        }
+        'task_kwargs': task_kwargs
     }
     event_string = ajson.dumps(event)
     message_object = {'Message': event_string}
@@ -117,25 +130,65 @@ def potential_connections_integration_event(request):
 
 
 @pytest.fixture(params=[
-    ('mock_generate_edge', 'surgeon_schema', 'Encounter', '_received_')
+    ('mock_derive_potential_connections', 'surgeon_schema', 'Documentation')
+])
+def potential_connections_integration_event(request):
+    params = request.param
+    schema_entry = _read_schema(params[1], params[2])
+    schema = _read_schema(params[1])
+    test_event = _read_test_event(params[0])
+    task_kwargs = ajson.loads(ajson.dumps(test_event))
+    task_kwargs.update({'schema': schema, 'schema_entry': schema_entry})
+    event = {
+        'task_name': 'derive_potential_connections',
+        'task_kwargs': task_kwargs,
+        'flow_id': 'some_flow_id'
+    }
+    event_string = ajson.dumps(event)
+    message_object = {'Message': event_string}
+    body_object = {'body': ajson.dumps(message_object)}
+    return {'Records': [body_object]}
+
+
+@pytest.fixture(params=[
+    ('mock_check_for_existing_vertexes', 'surgeon_schema', 'Documentation', '_documentation_'),
+    ('mock_check_for_existing_vertexes_2', 'surgeon_schema', 'Encounter', '_received_'),
+])
+def find_existing_vertexes(request):
+    params = request.param
+    schema_entry = _read_schema(params[1], params[2])
+    schema = _read_schema(params[1])
+    test_event = _read_test_event(params[0])
+    task_kwargs = ajson.loads(ajson.dumps(test_event))
+    edge_type = params[3]
+    rule_entry = _generate_linking_rule(schema_entry, edge_type)
+    task_kwargs.update({'schema': schema, 'schema_entry': schema_entry, 'rule_entry': rule_entry})
+    event = {
+        'task_name': 'check_for_existing_vertexes',
+        'task_kwargs': task_kwargs
+    }
+    event_string = ajson.dumps(event)
+    message_object = {'Message': event_string}
+    body_object = {'body': ajson.dumps(message_object)}
+    return {'Records': [body_object]}
+
+
+@pytest.fixture(params=[
+    ('mock_generate_potential_edge', 'surgeon_schema', 'Documentation', '_documentation_')
 ])
 def generate_edge_integration_event(request):
-    from toll_booth.obj.data_objects.graph_objects import VertexData
     params = request.param
     schema_entry = _read_schema(params[1], params[2])
     test_event = _read_test_event(params[0])
     edge_type = params[3]
     rule_entry = _generate_linking_rule(schema_entry, edge_type)
     edge_schema_entry = _read_schema(params[1], edge_type)
+    task_kwargs = ajson.loads(ajson.dumps(test_event))
+    task_kwargs.update({'schema_entry': edge_schema_entry, 'rule_entry': rule_entry})
     event = {
         'task_name': 'generate_potential_edge',
-        'task_kwargs': {
-            'schema_entry': edge_schema_entry,
-            'extracted_data': test_event['extracted_data'],
-            'source_vertex': VertexData.from_source_data(test_event['source_vertex']),
-            'identified_vertex': VertexData.from_source_data(test_event['potential_vertex']),
-            'rule_entry': rule_entry
-        }
+        'task_kwargs': task_kwargs,
+        'flow_id': 'some_flow_id'
     }
     event_string = ajson.dumps(event)
     message_object = {'Message': event_string}
@@ -228,11 +281,9 @@ def unit_environment():
 
 @pytest.fixture
 def integration_environment():
-    os.environ['GRAPH_GQL_ENDPOINT'] = 'yiawofjaffgrvlzyg2f6xnjzty.appsync-api.us-east-1.amazonaws.com'
-    os.environ['LISTENER_ARN'] = 'some_arn'
-    os.environ['ENCOUNTER_BUCKET'] = 'some_arn'
-    os.environ['DEBUG'] = 'True'
-    os.environ['GQL_API_KEY'] = 'da2-bjjye3kl35ekvitmxfxuslsviu'
+    os.environ['GRAPH_GQL_ENDPOINT'] = 'jlgmowxwofe33pdekndakyzx4i.appsync-api.us-east-1.amazonaws.com'
+    os.environ['ENCOUNTER_BUCKET'] = 'algernonsolutions-encounters-dev'
+    os.environ['DEBUG'] = 'False'
     os.environ['SENSITIVE_TABLE'] = 'Sensitives'
 
 
@@ -253,7 +304,7 @@ def cheap_mock(*args):
 
 
 def _read_test_event(event_name):
-    with open(path.join('tests', 'test_events', f'{event_name}.json')) as json_file:
+    with open(path.join('test_events', f'{event_name}.json')) as json_file:
         event = json.load(json_file)
         return event
 
@@ -261,7 +312,7 @@ def _read_test_event(event_name):
 def _read_schema(schema_name=None, entry_name=None):
     if not schema_name:
         schema_name = 'schema'
-    with open(path.join('tests', 'test_events', 'schema', f'{schema_name}.json')) as json_file:
+    with open(path.join('test_events', 'schema', f'{schema_name}.json')) as json_file:
         event = json.load(json_file)
         from toll_booth.obj.schemata.schema_parser import SchemaParer
         vertexes, edges = SchemaParer.parse(event)

@@ -290,10 +290,3 @@ class VertexRules(AlgObject):
 
     def add_rule_set(self, rule_set: VertexLinkRuleSet):
         self._linking_rules.append(rule_set)
-
-
-
-
-
-
-

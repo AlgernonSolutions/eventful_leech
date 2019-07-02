@@ -3,4 +3,4 @@ python-dateutil
 jsonref
 jsonschema
 requests
-moncrief>=2.0.0
+moncrief>=2.2.2

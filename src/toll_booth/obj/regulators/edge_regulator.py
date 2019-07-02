@@ -197,7 +197,7 @@ class EdgeRegulator(ObjectRegulator):
                 edge_value = self._generate_edge_property(
                     edge_property_name, edge_property, source_vertex,
                     potential_other, extracted_data, inbound)
-            except KeyError:
+            except KeyError as e:
                 if for_stub:
                     edge_value = None
                 else:

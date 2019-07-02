@@ -25,7 +25,7 @@ def mock_s3_stored_data():
 
 
 def tasks_bullhorn():
-    patch_obj = patch('toll_booth.tasks.leech.Bullhorn')
+    patch_obj = patch('toll_booth.tasks.announcer.Bullhorn')
     mock_obj = patch_obj.start()
     return mock_obj, patch_obj
 
