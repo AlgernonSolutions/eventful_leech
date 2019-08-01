@@ -1,0 +1,16 @@
+{
+  "task_name": "leech",
+  "task_kwargs": {
+    "object_type": "DocumentationField",
+    "extracted_data": {
+      "source": {
+        "encounter_id": "1001308",
+        "id_source": "PSI",
+        "parser_id": "credible_parser.v1",
+        "utc_generated_datetime": "2019-06-14T13:44:46.384277",
+        "field_name": "some_field_name",
+        "field_documentation": "blah blah blah, blah blah"
+      }
+    }
+  }
+}

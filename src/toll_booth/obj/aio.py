@@ -1,15 +1,10 @@
 import logging
-import os
 from collections import deque
 from copy import deepcopy
-from multiprocessing.pool import ThreadPool
 from queue import Queue
 from threading import Thread
 
 import boto3
-import rapidjson
-from algernon import rebuild_event
-from algernon.aws import lambda_logged
 
 from toll_booth.obj.gql.gql_client import GqlClient
 from toll_booth.obj.progress_tracking import Overseer
@@ -168,60 +163,3 @@ class AioMaster:
         }
         edge_data = edge_regulator.generate_potential_edge_data(**edge_kwargs)
         return edge_data
-
-
-def _aio_handler(event, context):
-    event = rebuild_event(event)
-    logging.info(f'started a call for the all_in_one leech: {event}/{context}')
-    bucket_name = os.environ['STORAGE_BUCKET_NAME']
-    progress_table_name = os.environ['PROGRESS_TABLE_NAME']
-    object_type = event['object_type']
-    identifier = event['identifier']
-    id_value = int(event['id_value'])
-    extracted_data = event['extracted_data']
-    schema = Schema.retrieve(bucket_name)
-    aio_kwargs = {
-        'identifier': identifier,
-        'id_value': id_value,
-        'source_object_type': object_type,
-        'extracted_data': extracted_data,
-        'schema': schema,
-        'num_potential_workers': event.get('num_potential_workers', 5),
-        'num_identified_workers': event.get('num_identified_workers', 5),
-        'progress_table_name': progress_table_name
-    }
-    aio_master = AioMaster(**aio_kwargs)
-    results = aio_master.work()
-    logging.info(f'completed a call for the all_in_one leech: {event}/{results}')
-    return [{x: y.for_gql for x, y in a.items()} for a in results]
-
-
-def _start_queued_aio(event, context):
-    batch = []
-    for entry in event['Records']:
-        entry_body = rapidjson.loads(entry['body'])
-        original_payload = rapidjson.loads(entry_body['Message'])
-        payload = rebuild_event(original_payload)
-        batch.append((payload, context))
-    pool = ThreadPool(len(batch))
-    pool.starmap(_aio_handler, batch)
-    pool.close()
-    pool.join()
-
-
-def _check_expected_args(provided_args, expected_args):
-    for arg in expected_args:
-        if arg not in provided_args:
-            return False
-    return True
-
-
-@lambda_logged
-def aio_handler(event, context):
-    expected_args = ['object_type', 'identifier', 'id_value', 'extracted_data']
-    if 'Records' in event:
-        return _start_queued_aio(event, context)
-    event = rebuild_event(event)
-    if _check_expected_args(event, expected_args):
-        return _aio_handler(event, context)
-    raise RuntimeError(f'not sure how to process {event}')

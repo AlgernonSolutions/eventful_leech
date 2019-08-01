@@ -1,0 +1,53 @@
+{
+  "source_vertex": {
+    "_alg_class": "VertexData",
+    "_alg_module": "toll_booth.obj.data_objects.graph_objects",
+    "value": {
+      "_object_type": "Documentation",
+      "_internal_id": "60683905c09bb96fc32c24fbefaca61d",
+      "_identifier_stem": {
+        "data_type": "S",
+        "property_value": "#vertex#Documentation#{\"id_source\": \"PSI\", \"parser_id\": \"credible_parser.v1\"}#",
+        "property_name": "identifier_stem"
+      },
+      "_id_value": {
+        "data_type": "N",
+        "property_name": "id_value",
+        "property_value": "1001308"
+      },
+      "_local_properties": [
+        {
+          "data_type": "N",
+          "property_name": "encounter_id",
+          "property_value": "1001308"
+        },
+        {
+          "data_type": "S",
+          "property_name": "id_source",
+          "property_value": "PSI"
+        },
+        {
+          "data_type": "S",
+          "property_name": "parser_id",
+          "property_value": "credible_parser.v1"
+        },
+        {
+          "data_type": "DT",
+          "property_name": "utc_generated_datetime",
+          "property_value": "2019-06-17T17:21:48+0000"
+        }
+      ],
+      "_stored_properties": [],
+      "_sensitive_properties": []
+    },
+    "extracted_data": {
+        "source": {
+            "encounter_id": "1001308",
+            "id_source": "PSI",
+            "parser_id": "credible_parser.v1",
+            "utc_generated_datetime": "2019-06-17T17:21:48.831656"
+        }
+    }
+  },
+  "extracted_data": {}
+}

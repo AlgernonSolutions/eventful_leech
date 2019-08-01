@@ -1,0 +1,11 @@
+{
+  "task_name": "leech",
+  "task_kwargs": {
+    "_alg_class": "StoredData",
+    "_alg_module": "algernon.aws.snakes",
+    "value": {
+      "pointer": "algernonsolutions-leech-dev#cache/c69e17e0-abfb-4c8d-b5ac-e204bd6d22af!1561636667.32185.json"
+    }
+  },
+  "callback": "get_credible_object#store_credible_object#generate_credible_leech_payload#leech"
+}

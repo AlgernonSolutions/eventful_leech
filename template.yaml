@@ -43,34 +43,13 @@ Globals:
         FIRE_HOSE_NAME: !Ref FireHoseName
 
 Resources:
-  AioH:
+  LeechH:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: toll_booth.aio_handler
+      Handler: toll_booth.handler
       Role: !ImportValue dev-worker-role-arn
       Timeout: 45
       CodeUri: src/
-      Events:
-        aio:
-          Type: SQS
-          Properties:
-            Queue: !GetAtt Aio.Outputs.QueueArn
-            BatchSize: 10
-            Enabled: true
-  FireHoseH:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: toll_booth.fire_hose_handler
-      Role: !ImportValue dev-worker-role-arn
-      Timeout: 45
-      CodeUri: src/
-      Events:
-        firehose:
-          Type: SQS
-          Properties:
-            Queue: !GetAtt FireHose.Outputs.QueueArn
-            BatchSize: 10
-            Enabled: true
   StarterH:
     Type: AWS::Serverless::Function
     Properties:
@@ -78,19 +57,3 @@ Resources:
       Role: !ImportValue dev-worker-role-arn
       Timeout: 120
       CodeUri: src/
-  FireHose:
-    Type: AWS::Serverless::Application
-    Properties:
-      Location:
-        ApplicationId: arn:aws:serverlessrepo:us-east-1:726075243133:applications/AlgernonShuckLine
-        SemanticVersion: 0.0.9
-      Parameters:
-        TaskName: 'firehose'
-  Aio:
-    Type: AWS::Serverless::Application
-    Properties:
-      Location:
-        ApplicationId: arn:aws:serverlessrepo:us-east-1:726075243133:applications/AlgernonShuckLine
-        SemanticVersion: 0.0.9
-      Parameters:
-        TaskName: 'aio'

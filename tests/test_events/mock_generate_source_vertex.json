@@ -1,0 +1,20 @@
+{
+  "source": {
+    "patient_id": {"_alg_class": "decimal", "value": "1000272"},
+    "provider_id": {"_alg_class": "decimal", "value": "6855"},
+    "id_source": "PSI",
+    "encounter_id": {"_alg_class": "decimal", "value": "1118857"},
+    "documentation": "<some documentation>",
+    "encounter_datetime_in": {"_alg_class": "datetime", "value": {"tz": null, "timestamp": 1477994400.0}},
+    "encounter_datetime_out": {"_alg_class": "datetime", "value": {"tz": null, "timestamp": 1477997100.0}},
+    "encounter_type": "Community Support"
+  },
+  "patient_data": [
+    {
+      "last_name": "Doe",
+      "first_name": "John",
+      "dob": {"_alg_class": "datetime", "value": {"tz": null, "timestamp": 1477996100.0}}
+    }
+  ]
+}
+

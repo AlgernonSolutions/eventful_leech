@@ -3191,11 +3191,17 @@
       },
       "extracted_data": {
           "source": {
-              "id_source": "Algernon",
-              "id_type": "Employees",
-              "id_name": "emp_id",
-              "id_value": 1001
-          }
+              "patient_id": {"_alg_class": "decimal", "value": "1005345"},
+              "provider_id": {"_alg_class": "decimal", "value": "11838"},
+              "id_source": "PSI",
+              "encounter_id": {"_alg_class": "decimal", "value": "3240987"},
+              "documentation": "<html></html>",
+              "encounter_datetime_in": {"_alg_class": "datetime", "value": {"tz": null, "timestamp": 1553089740.0}},
+              "encounter_datetime_out": {"_alg_class": "datetime", "value": {"tz": null, "timestamp": 1553094720.0}},
+              "encounter_type": "Community Support"
+          },
+          "patient_data": [
+              {"last_name": "Doe", "first_name": "John", "dob": {"_alg_class": "datetime", "value": {"tz": null, "timestamp": 502588800.0}}}]
       }
   }
 }

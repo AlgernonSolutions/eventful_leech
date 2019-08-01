@@ -1,0 +1,164 @@
+{
+  "source_vertex": {
+      "_alg_class": "VertexData",
+      "_alg_module": "toll_booth.obj.data_objects.graph_objects",
+      "value": {
+          "_object_type": "Documentation",
+          "_internal_id": "'60683905c09bb96fc32c24fbefaca61d",
+          "_identifier_stem": {
+              "data_type": "S",
+              "property_value": "#vertex#Documentation#{\"id_source\": \"PSI\", \"parser_id\": \"credible_parser.v1\"}#",
+              "property_name": "identifier_stem"
+          },
+          "_id_value": {
+              "data_type": "N",
+              "property_name": "id_value",
+              "property_value": "1001308"
+          },
+          "_local_properties": [{
+                  "data_type": "N",
+                  "property_name": "encounter_id",
+                  "property_value": "1001308"
+              }, {
+                  "data_type": "S",
+                  "property_name": "id_source",
+                  "property_value": "PSI"
+              }, {
+                  "data_type": "S",
+                  "property_name": "parser_id",
+                  "property_value": "credible_parser.v1"
+              },
+              {
+                  "data_type": "DT",
+                  "property_name": "utc_generated_datetime",
+                  "property_value": "2019-06-17T17:21:48+0000"
+              }
+          ],
+          "_stored_properties": [],
+          "_sensitive_properties": []
+      }
+  },
+  "identified_vertex": {
+      "_alg_class": "VertexData",
+      "_alg_module": "toll_booth.obj.data_objects.graph_objects",
+      "value": {
+        "_object_type": "Encounter",
+        "_internal_id": "9fb1ee70f35fbd988916d2fcfe7f7c8b",
+        "_identifier_stem": {
+          "data_type": "S",
+          "property_value": "#vertex#Encounter#{\"id_source\": \"PSI\"}#",
+          "property_name": "identifier_stem"
+        },
+        "_id_value": {
+          "data_type": "N",
+          "property_name": "id_value",
+          "property_value": "1001308"
+        },
+        "_local_properties": [
+          {
+            "data_type": "N",
+            "property_name": "encounter_id",
+            "property_value": "1001308"
+          },
+          {
+            "data_type": "S",
+            "property_name": "id_source",
+            "property_value": "PSI"
+          },
+          {
+            "data_type": "N",
+            "property_name": "provider_id",
+            "property_value": "<toll_booth.obj.data_objects.identifiers.MissingObjectProperty object at 0x7f077383c6d8>"
+          },
+          {
+              "data_type": "N",
+              "property_name": "patient_id",
+              "property_value": "<toll_booth.obj.data_objects.identifiers.MissingObjectProperty object at 0x7f077383cdd8>"
+          },
+          {
+              "data_type": "S",
+              "property_name": "encounter_type",
+              "property_value": "<toll_booth.obj.data_objects.identifiers.MissingObjectProperty object at 0x7f0773876128>"
+          },
+          {
+              "data_type": "DT",
+              "property_name": "encounter_datetime_in",
+              "property_value": "<toll_booth.obj.data_objects.identifiers.MissingObjectProperty object at 0x7f0773876278>"
+          },
+          {
+              "data_type": "DT",
+              "property_name": "encounter_datetime_out",
+              "property_value": "<toll_booth.obj.data_objects.identifiers.MissingObjectProperty object at 0x7f07738762b0>"
+          },
+          {
+              "data_type": "S",
+              "property_name": "id_source",
+              "property_value": "PSI"
+          }
+        ],
+        "_stored_properties": [
+          {
+              "data_type": "S",
+              "property_name": "documentation",
+              "storage_class": "s3",
+              "storage_uri": "s3://algernonsolutions-encounters-dev/9fb1ee70f35fbd988916d2fcfe7f7c8b.documentation"
+          }
+        ],
+        "_sensitive_properties": []
+      }
+    },
+  "rule_entry": {
+    "_alg_class": "VertexLinkRuleEntry",
+    "_alg_module": "toll_booth.obj.schemata.rules",
+    "value": {
+      "_target_type": "Patient",
+      "_edge_type": "_received_",
+      "_target_constants": [
+        {"constant_name": "id_source", "constant_value": "source.id_source"}
+      ],
+      "_target_specifiers": [
+        {
+          "_alg_class": "SharedPropertySpecifier",
+          "_alg_module": "toll_booth.obj.schemata.rules",
+          "value": {
+            "_specifier_name": "received",
+            "_specifier_type": "shared_property",
+            "_shared_properties": ["id_source", "patient_id"]
+          }
+        },
+        {
+          "_alg_class": "ExtractionSpecifier",
+          "_alg_module": "toll_booth.obj.schemata.rules",
+          "value": {
+            "_specifier_name": "patient_data",
+            "_specifier_type": "extraction",
+            "_extracted_properties": ["last_name", "first_name", "dob"]
+          }
+        }
+      ],
+      "_if_absent": "stub",
+      "_inbound": false,
+      "_function_name": null
+    }
+  },
+  "extracted_data": {
+    "source": {
+      "patient_id": {"_alg_class": "decimal", "value": "1000272"},
+      "provider_id": {"_alg_class": "decimal", "value": "6855"},
+      "id_source": "PSI",
+      "encounter_id": {"_alg_class": "decimal", "value": "1118857"},
+      "documentation": "<some documentation>",
+      "encounter_datetime_in": {"_alg_class": "datetime", "value": {"tz": null, "timestamp": 1477994400.0}},
+      "encounter_datetime_out": {"_alg_class": "datetime", "value": {"tz": null, "timestamp": 1477997100.0}},
+      "encounter_type": "Community Support"
+    },
+    "patient_data": [
+      {
+        "last_name": "Doe",
+        "first_name": "John",
+        "dob": {"_alg_class": "datetime", "value": {"tz": null, "timestamp": 1477996100.0}}
+      }
+    ]
+  }
+}
+

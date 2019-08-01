@@ -265,6 +265,65 @@
       }
     },
     {
+      "vertex_name": "DocumentationText",
+      "vertex_properties": [
+        {
+          "property_name": "encounter_id",
+          "property_data_type": "Number",
+          "is_id_value": true
+        },
+        {
+          "property_name": "id_source",
+          "property_data_type": "String"
+        },
+        {
+          "property_name": "utc_generated_datetime",
+          "property_data_type": "DateTime"
+        },
+        {
+          "property_name": "documentation_text",
+          "property_data_type": "String",
+          "sensitive": true
+        }
+      ],
+      "identifier_stem": [
+        "id_source"
+      ],
+      "internal_id_key": [
+        "id_source",
+        "object_type",
+        "encounter_id"
+      ],
+      "indexes": [],
+      "extract": [],
+      "rules": {
+        "linking_rules": [
+          {
+            "vertex_specifiers": [],
+            "inbound": [
+              {
+                "edge_type": "_documentation_text_",
+                "target_type": "Encounter",
+                "target_constants": [],
+                "target_specifiers": [
+                  {
+                    "specifier_name": "encounter",
+                    "specifier_type": "shared_property",
+                    "shared_properties": [
+                      "id_source",
+                      "encounter_id"
+                    ]
+                  }
+                ],
+                "if_absent": "pass"
+              }
+            ],
+            "outbound": []
+          }
+        ]
+      }
+    },
+    {
       "vertex_name": "DocumentationEntry",
       "vertex_properties": [
         {
@@ -395,6 +454,18 @@
           }
         }
       ],
+      "indexes": []
+    },
+    {
+      "edge_label": "_documentation_text_",
+      "internal_id_key": [
+        "from.internal_id",
+        "schema.edge_label",
+        "to.internal_id"
+      ],
+      "from": ["Encounter"],
+      "to": ["DocumentationText"],
+      "edge_properties": [],
       "indexes": []
     },
     {

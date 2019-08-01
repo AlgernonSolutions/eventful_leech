@@ -1,0 +1,99 @@
+{
+    "source_vertex": {
+      "_alg_class": "VertexData",
+      "_alg_module": "toll_booth.obj.data_objects.graph_objects",
+      "value": {
+        "_object_type": "DocumentationEntry",
+        "_internal_id": "49f66981f4cf51db9778ba226fb9626a",
+        "_identifier_stem": {
+          "data_type": "S",
+          "property_value": "#vertex#DocumentationEntry#{\"id_source\": \"PSI\", \"encounter_id\": \"1012338\", \"parser_id\": \"credible_parser.v1\"}#",
+          "property_name": "identifier_stem"
+        },
+        "_id_value": {
+          "data_type": "N",
+          "property_name": "id_value",
+          "property_value": "1012338"
+        },
+        "_local_properties": [
+          {
+            "data_type": "N",
+            "property_name": "encounter_id",
+            "property_value": "1012338"
+          },
+          {
+            "data_type": "S",
+            "property_name": "id_source",
+            "property_value": "PSI"
+          },
+          {
+            "data_type": "S",
+            "property_name": "parser_id",
+            "property_value": "credible_parser.v1"
+          }
+        ],
+        "_stored_properties": [],
+        "_sensitive_properties": [
+          {
+            "data_type": "S",
+            "property_name": "field_name",
+            "property_value": "patient_response",
+            "source_internal_id": "49f66981f4cf51db9778ba226fb9626a"
+          },
+          {
+            "data_type": "S",
+            "property_name": "field_documentation",
+            "property_value": "Consumer seemed receptive to the information provided to him and he stated that he would use the information so he can secure a job. CBI ONLY ACT Nurse Only MED Check/Education Injection ACT Doctor Only MED Check/Education Substance Use Mental Status Exam Tx Plan",
+            "source_internal_id": "49f66981f4cf51db9778ba226fb9626a"
+          }
+        ]
+      }
+    },
+    "potential_vertex": {
+      "_alg_class": "VertexData",
+      "_alg_module": "toll_booth.obj.data_objects.graph_objects",
+      "value": {
+        "_object_type": "Documentation",
+        "_internal_id": "e2f2cd4aba458bb18853cf702e59da78",
+        "_identifier_stem": {
+          "data_type": "S",
+          "property_value": "#vertex#Documentation#{\"id_source\": \"PSI\", \"parser_id\": \"credible_parser.v1\"}#",
+          "property_name": "identifier_stem"
+        },
+        "_id_value": {
+          "data_type": "N",
+          "property_name": "id_value",
+          "property_value": "1012338"
+        },
+        "_local_properties": [
+          {
+            "data_type": "N",
+            "property_name": "encounter_id",
+            "property_value": "1012338"
+          },
+          {
+            "data_type": "S",
+            "property_name": "id_source",
+            "property_value": "PSI"
+          },
+          {
+            "data_type": "S",
+            "property_name": "parser_id",
+            "property_value": "credible_parser.v1"
+          }
+        ],
+        "_stored_properties": [],
+        "_sensitive_properties": []
+      }
+    },
+  "extracted_data": {
+      "source": {
+        "encounter_id": "1012338",
+        "id_source": "PSI",
+        "parser_id": "credible_parser.v1",
+        "field_name": "patient_response",
+        "field_documentation": "Consumer seemed receptive to the information provided to him and he stated that he would use the information so he can secure a job. CBI ONLY ACT Nurse Only MED Check/Education Injection ACT Doctor Only MED Check/Education Substance Use Mental Status Exam Tx Plan"
+      }
+    }
+}
+
