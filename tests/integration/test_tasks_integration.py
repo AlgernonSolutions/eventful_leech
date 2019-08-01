@@ -1,12 +1,28 @@
+import os
+
 import pytest
 import rapidjson
 
-from toll_booth import handler
+from toll_booth import handler, aio_handler, audit_handler
 
 
 @pytest.mark.tasks_integration
 @pytest.mark.usefixtures('integration_environment')
 class TestTasks:
+    @pytest.mark.audit
+    def test_audit(self, mock_context):
+        os.environ['MIGRATION_TABLE_NAME'] = 'Migratory'
+        event = {
+            'identifier': '#ICFS#Encounter#'
+        }
+        results = audit_handler(event, mock_context)
+        assert results
+
+    @pytest.mark.aio
+    def test_aio(self, aio_event, mock_context):
+        results = aio_handler(aio_event, mock_context)
+        assert results
+
     @pytest.mark.leech_i
     def test_leech_i(self, leech_integration_event, mock_context, mocks):
         results = handler(leech_integration_event, mock_context)

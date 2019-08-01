@@ -22,109 +22,75 @@ Parameters:
     Type: String
     Description: the table holding the PHI information
     Default: 'Sensitives'
+  FireHoseName:
+    Type: String
+    Description: the Firehose stream used to push objects to S3
 
 Conditions:
   DevDeploy: !Equals [!Ref IsDev, 'True']
   ProdDeploy: !Equals [!Ref IsDev, 'False']
 
+Globals:
+  Function:
+    Runtime: python3.7
+    Tracing: Active
+    Environment:
+      Variables:
+        DEBUG: !Ref IsDev
+        SENSITIVES_TABLE_NAME: !Ref SensitivesTableName
+        STORAGE_BUCKET_NAME: !Ref StorageBucketName
+        ENCOUNTER_BUCKET: !Ref EncounterBucketName
+        FIRE_HOSE_NAME: !Ref FireHoseName
+
 Resources:
-  Task:
+  AioH:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: toll_booth.handler
+      Handler: toll_booth.aio_handler
       Role: !ImportValue dev-worker-role-arn
-      Runtime: python3.7
-      Tracing: Active
-      Timeout: 900
+      Timeout: 45
       CodeUri: src/
-      Environment:
-        Variables:
-          DEBUG: !Ref IsDev
-          SENSITIVES_TABLE_NAME: !Ref SensitivesTableName
-          GRAPH_GQL_ENDPOINT: !Ref DataGqlEndpoint
-          STORAGE_BUCKET_NAME: !Ref StorageBucketName
-          ENCOUNTER_BUCKET: !Ref EncounterBucketName
       Events:
-        leech:
+        aio:
           Type: SQS
           Properties:
-            Queue: !GetAtt Leech.Outputs.QueueArn
+            Queue: !GetAtt Aio.Outputs.QueueArn
             BatchSize: 10
             Enabled: true
-        generateSourceVertex:
+  FireHoseH:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: toll_booth.fire_hose_handler
+      Role: !ImportValue dev-worker-role-arn
+      Timeout: 45
+      CodeUri: src/
+      Events:
+        firehose:
           Type: SQS
           Properties:
-            Queue: !GetAtt GenerateSourceVertex.Outputs.QueueArn
+            Queue: !GetAtt FireHose.Outputs.QueueArn
             BatchSize: 10
             Enabled: true
-        derivePotentialConnections:
-          Type: SQS
-          Properties:
-            Queue: !GetAtt DerivePotentialConnections.Outputs.QueueArn
-            BatchSize: 10
-            Enabled: true
-        checkForExistingVertexes:
-          Type: SQS
-          Properties:
-            Queue: !GetAtt CheckForExistingVertexes.Outputs.QueueArn
-            BatchSize: 10
-            Enabled: true
-        generatePotentialEdge:
-          Type: SQS
-          Properties:
-            Queue: !GetAtt GeneratePotentialEdge.Outputs.QueueArn
-            BatchSize: 10
-            Enabled: true
-  Leech:
+  StarterH:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: toll_booth.starter_handler
+      Role: !ImportValue dev-worker-role-arn
+      Timeout: 120
+      CodeUri: src/
+  FireHose:
     Type: AWS::Serverless::Application
     Properties:
       Location:
         ApplicationId: arn:aws:serverlessrepo:us-east-1:726075243133:applications/AlgernonShuckLine
         SemanticVersion: 0.0.9
       Parameters:
-        TaskName: 'leech'
-  GenerateSourceVertex:
-    Type: AWS::Serverless::Application
-    Properties:
-      Location:
-        ApplicationId: arn:aws:serverlessrepo:us-east-1:726075243133:applications/AlgernonShuckLine
-        SemanticVersion:  0.0.9
-      Parameters:
-        TaskName: 'generate_source_vertex'
-        DeadLetterArn: !GetAtt Leech.Outputs.DeadLetterArn
-        MasterKeyId: !GetAtt Leech.Outputs.MasterKeyId
-  DerivePotentialConnections:
-    Type: AWS::Serverless::Application
-    Properties:
-      Location:
-        ApplicationId: arn:aws:serverlessrepo:us-east-1:726075243133:applications/AlgernonShuckLine
-        SemanticVersion:  0.0.9
-      Parameters:
-        TaskName: 'derive_potential_connections'
-        DeadLetterArn: !GetAtt Leech.Outputs.DeadLetterArn
-        MasterKeyId: !GetAtt Leech.Outputs.MasterKeyId
-  CheckForExistingVertexes:
-    Type: AWS::Serverless::Application
-    Properties:
-      Location:
-        ApplicationId: arn:aws:serverlessrepo:us-east-1:726075243133:applications/AlgernonShuckLine
-        SemanticVersion:  0.0.9
-      Parameters:
-        TaskName: 'check_for_existing_vertexes'
-        DeadLetterArn: !GetAtt Leech.Outputs.DeadLetterArn
-        MasterKeyId: !GetAtt Leech.Outputs.MasterKeyId
-  GeneratePotentialEdge:
+        TaskName: 'firehose'
+  Aio:
     Type: AWS::Serverless::Application
     Properties:
       Location:
         ApplicationId: arn:aws:serverlessrepo:us-east-1:726075243133:applications/AlgernonShuckLine
         SemanticVersion: 0.0.9
       Parameters:
-        TaskName: 'generate_potential_edge'
-        DeadLetterArn: !GetAtt Leech.Outputs.DeadLetterArn
-        MasterKeyId: !GetAtt Leech.Outputs.MasterKeyId
-
-Outputs:
-  LeechFunction:
-    Description: "task function ARN"
-    Value: !GetAtt Task.Arn
+        TaskName: 'aio'

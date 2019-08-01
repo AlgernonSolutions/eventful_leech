@@ -1,0 +1,29 @@
+{
+  "StartAt": "parse_documentation",
+  "States": {
+    "parse_documentation": {
+      "Type": "Task",
+      "Parameters":{
+        "parse_type": "distill",
+        "parse_kwargs": {
+          "encounter_internal_id.$": "$$.Execution.Input.detail.internal_id"
+        }
+      },
+      "Resource": "arn:aws:lambda:us-east-1:726075243133:function:doc-parser-dev-Task-1DKL38AG9ZB8E",
+      "ResultPath": "$.parser",
+      "Next": "fire_hose"
+    },
+    "fire_hose": {
+      "Type": "Task",
+      "Parameters": {
+        "parse_type": "fire_hose",
+        "parse_kwargs": {
+          "extracted_data.$": "$.parser"
+        }
+      },
+      "Resource": "arn:aws:lambda:us-east-1:726075243133:function:doc-parser-dev-Task-1DKL38AG9ZB8E",
+      "ResultPath": "$.fire_hose",
+      "End": true
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "StartAt": "parse_documentation",
+  "States": {
+    "parse_documentation": {
+      "Type": "Task",
+      "Parameters":{
+        "encounter_internal_id.$": "$$.Execution.Input.detail.internal_id"
+      },
+      "Resource": "arn:aws:lambda:us-east-1:726075243133:function:doc-parser-dev-Task-1DKL38AG9ZB8E",
+      "Catch": [
+        {
+          "ErrorEquals": ["EmptyParserResponseException"],
+          "ResultPath": "$.error",
+          "Next": "note_empty_parser_response"
+        }
+      ],
+      "ResultPath": "$.parser",
+      "End": true
+    },
+    "note_empty_parser_response": {
+      "Type": "Task",
+      "Parameters": {
+         "QueueUrl": "https://sqs.us-east-1.amazonaws.com/726075243133/DocParserErrors",
+         "MessageBody.$": "$$.Execution.Input"
+      },
+      "Resource": "arn:aws:states:::sqs:sendMessage",
+      "Next": "empty_parser_fail"
+    },
+    "empty_parser_fail": {
+      "Type": "Fail",
+      "Error": "EmptyParserResponseException"
+    }
+  }
+}

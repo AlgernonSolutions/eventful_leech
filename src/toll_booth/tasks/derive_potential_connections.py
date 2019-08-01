@@ -1,13 +1,11 @@
-from typing import Dict, List, Union
+from typing import Dict
 
 from aws_xray_sdk.core import xray_recorder
 
 from toll_booth.obj.data_objects.graph_objects import VertexData
 from toll_booth.obj.regulators.arbiter import RuleArbiter
 from toll_booth.obj.schemata import SchemaVertexEntry
-from toll_booth.obj.schemata.rules import VertexLinkRuleEntry
 from toll_booth.obj.schemata.schema import Schema
-from toll_booth.tasks.announcer import announce_check_for_existing_vertexes
 
 
 @xray_recorder.capture()
@@ -15,7 +13,7 @@ def derive_potential_connections(schema: Schema,
                                  schema_entry: SchemaVertexEntry,
                                  source_vertex: VertexData,
                                  extracted_data: Dict,
-                                 **kwargs) -> List[Dict[str, Union[VertexData, VertexLinkRuleEntry]]]:
+                                 **kwargs):
     """Generate a list of PotentialVertex objects indicated by the schema_entry
 
     Args:
@@ -33,7 +31,6 @@ def derive_potential_connections(schema: Schema,
     for vertex_entry in potential_vertexes:
         vertex = vertex_entry[0]
         rule_entry = vertex_entry[1]
-        announce_check_for_existing_vertexes(schema, source_vertex, vertex, rule_entry, schema_entry, extracted_data)
         results.append({
             'schema': schema,
             'source_vertex': source_vertex,

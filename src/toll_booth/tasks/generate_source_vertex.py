@@ -18,7 +18,7 @@ def _graph_vertex(vertex_data: VertexData):
     return gql_client.graph_vertex(vertex_data)
 
 
-@xray_recorder.capture()
+# @xray_recorder.capture()
 def generate_source_vertex(schema: Schema,
                            schema_entry: SchemaVertexEntry,
                            extracted_data: Dict[str, Any],
@@ -43,8 +43,8 @@ def generate_source_vertex(schema: Schema,
     vertex_data = regulator.create_potential_vertex_data(object_data, internal_id, identifier_stem, id_value)
     if not vertex_data.is_schema_complete(schema_entry):
         raise RuntimeError(f'could not completely construct a source vertex from: {extracted_data}')
-    _graph_vertex(vertex_data)
-    announce_derive_potential_connections(vertex_data, schema, schema_entry, extracted_data)
+    # _graph_vertex(vertex_data)
+    # announce_derive_potential_connections(vertex_data, schema, schema_entry, extracted_data)
     return {
         'source_vertex': vertex_data,
         'schema': schema,

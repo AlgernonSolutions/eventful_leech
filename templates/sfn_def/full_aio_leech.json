@@ -1,0 +1,300 @@
+{
+  "StartAt": "setup",
+  "States": {
+    "setup": {
+      "Type": "Pass",
+      "Result": {
+        "s3": {"enabled": true, "bucket_name": "algernonsolutions-leech-dev"},
+        "rds": {"enabled": false},
+        "redshift": {"enabled": false}
+      },
+      "ResultPath": "$.push",
+      "Next": "aio_leech"
+    },
+    "aio_leech": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:us-east-1:726075243133:function:leech-dev-3-AioH-4P4BI7DR4KWB",
+        "ResultPath": "$.aio",
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 3,
+            "MaxAttempts": 6,
+            "BackoffRate": 1.5
+          }
+        ],
+        "Catch": [
+            {
+              "ErrorEquals": [
+                "States.ALL"
+              ],
+              "ResultPath": "$.error",
+              "Next": "fail"
+            }
+          ],
+       "Next": "push"
+     },
+    "push": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "graph",
+          "States": {
+            "graph": {
+              "Type": "Task",
+              "Parameters": {
+                "push_type": "graph",
+                "aio.$": "$.aio"
+              },
+              "Resource": "arn:aws:lambda:us-east-1:726075243133:function:pusher-dev-VpcTask-ZG5G1NPS66IN",
+               "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "Lambda.ServiceException",
+                      "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 3,
+                    "MaxAttempts": 6,
+                    "BackoffRate": 1.5
+                  }
+                ],
+               "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "ResultPath": "$.error",
+                  "Next": "graph_failed"
+                }
+              ],
+              "End": true
+            },
+            "graph_failed": {
+              "Type": "Fail"
+            }
+          }
+        },
+        {
+          "StartAt": "index",
+          "States": {
+            "index": {
+              "Type": "Task",
+               "Parameters": {
+                "push_type": "index",
+                "aio.$": "$.aio"
+              },
+              "Resource": "arn:aws:lambda:us-east-1:726075243133:function:pusher-dev-Task-Y14ACP3ICQ0T",
+               "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "Lambda.ServiceException",
+                      "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 3,
+                    "MaxAttempts": 6,
+                    "BackoffRate": 1.5
+                  }
+                ],
+               "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "ResultPath": "$.error",
+                  "Next": "index_failed"
+                }
+              ],
+              "End": true
+            },
+            "index_failed": {
+              "Type": "Pass",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "push_to_s3?",
+          "States": {
+            "push_to_s3?": {
+              "Type": "Choice",
+              "Choices": [{
+                "Variable": "$.push.s3.enabled",
+                "BooleanEquals": true,
+                "Next": "push_to_s3"
+              }],
+              "Default": "s3_not_called"
+            },
+            "push_to_s3": {
+              "Type": "Task",
+               "Parameters": {
+                "push_type": "s3",
+                 "push_kwargs": {
+                   "bucket_name": "algernonsolutions-leech-dev",
+                   "base_file_key": "bulk"
+                 },
+                "aio.$": "$.aio"
+              },
+              "Resource": "arn:aws:lambda:us-east-1:726075243133:function:pusher-dev-Task-Y14ACP3ICQ0T",
+               "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "Lambda.ServiceException",
+                      "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 3,
+                    "MaxAttempts": 6,
+                    "BackoffRate": 1.5
+                  }
+                ],
+               "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "ResultPath": "$.error",
+                  "Next": "push_to_s3_failed"
+                }
+              ],
+               "End": true
+            },
+            "push_to_s3_failed": {
+              "Type": "Fail"
+            },
+            "s3_not_called": {
+              "Type": "Pass",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "push_to_rds?",
+          "States": {
+             "push_to_rds?": {
+              "Type": "Choice",
+              "Choices": [{
+                "Variable": "$.push.rds.enabled",
+                "BooleanEquals": true,
+                "Next": "push_to_rds"
+              }],
+              "Default": "rds_not_called"
+            },
+            "push_to_rds": {
+              "Type": "Task",
+               "Parameters": {
+                "push_type": "rds",
+                "aio.$": "$.aio"
+              },
+              "Resource": "arn:aws:lambda:us-east-1:726075243133:function:pusher-dev-Task-Y14ACP3ICQ0T",
+               "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "Lambda.ServiceException",
+                      "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 3,
+                    "MaxAttempts": 6,
+                    "BackoffRate": 1.5
+                  }
+                ],
+               "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "ResultPath": "$.error",
+                  "Next": "push_to_rds_failed"
+                }
+              ],
+              "End": true
+            },
+            "push_to_rds_failed": {
+              "Type": "Pass",
+              "End": true
+            },
+            "rds_not_called": {
+              "Type": "Pass",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "push_to_redshift?",
+          "States": {
+             "push_to_redshift?": {
+              "Type": "Choice",
+              "Choices": [{
+                "Variable": "$.push.redshift.enabled",
+                "BooleanEquals": true,
+                "Next": "push_to_redshift"
+              }],
+              "Default": "redshift_not_called"
+            },
+            "push_to_redshift": {
+              "Type": "Task",
+               "Parameters": {
+                "push_type": "redshift",
+                "aio.$": "$.aio"
+              },
+              "Resource": "arn:aws:lambda:us-east-1:726075243133:function:pusher-dev-Task-Y14ACP3ICQ0T",
+               "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "Lambda.ServiceException",
+                      "Lambda.TooManyRequestsException"
+                    ],
+                    "IntervalSeconds": 3,
+                    "MaxAttempts": 6,
+                    "BackoffRate": 1.5
+                  }
+                ],
+               "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "ResultPath": "$.error",
+                  "Next": "push_to_redshift_failed"
+                }
+              ],
+              "End": true
+            },
+            "push_to_redshift_failed": {
+              "Type": "Fail"
+            },
+            "redshift_not_called": {
+              "Type": "Pass",
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": "$.push",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.error",
+          "Next": "fail"
+        }
+      ],
+      "Next": "push_events"
+    },
+    "push_events": {
+      "Type": "Task",
+      "Parameters": {
+        "push_type": "event",
+        "aio.$": "$.aio"
+      },
+      "Resource": "arn:aws:lambda:us-east-1:726075243133:function:pusher-dev-Task-Y14ACP3ICQ0T",
+      "ResultPath": "$.event_push",
+      "End": true
+    },
+    "fail": {
+      "Type": "Fail"
+    }
+  }
+}

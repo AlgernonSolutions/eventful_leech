@@ -273,7 +273,7 @@ def environment():
 def unit_environment():
     os.environ['GRAPH_GQL_ENDPOINT'] = 'some_endpoint.com'
     os.environ['LISTENER_ARN'] = 'some_arn'
-    os.environ['ENCOUNTER_BUCKET'] = 'some_arn'
+    os.environ['ENCOUNTER_BUCKET'] = 'algernonsolutions-leech-dev'
     os.environ['DEBUG'] = 'True'
     os.environ['GQL_API_KEY'] = 'some_key'
     os.environ['SENSITIVE_TABLE'] = 'some_table'
@@ -301,12 +301,6 @@ def mock_context():
 def cheap_mock(*args):
     from unittest.mock import Mock
     return Mock, ()
-
-
-def _read_test_event(event_name):
-    with open(path.join('test_events', f'{event_name}.json')) as json_file:
-        event = json.load(json_file)
-        return event
 
 
 def _read_schema(schema_name=None, entry_name=None):
@@ -337,3 +331,15 @@ def _generate_linking_rule(schema_entry, edge_type):
         for rule in rules:
             if str(rule) == edge_type:
                 return rule
+
+
+def _read_test_event(event_name):
+    user_home = path.expanduser('~')
+    with open(path.join(str(user_home), '.algernon', 'pusher', f'{event_name}.json')) as json_file:
+        event = json.load(json_file)
+        return event
+
+
+@pytest.fixture(params=['documentation_text_extracted_data'])
+def aio_event(request):
+    return _read_test_event(request.param)

@@ -17,12 +17,12 @@ def _graph_cluster(source_vertex: VertexData,
     return gql_client.graph_cluster(source_vertex, identified_vertex, potential_edge)
 
 
-@xray_recorder.capture()
+# @xray_recorder.capture()
 def generate_potential_edge(schema_entry: SchemaEdgeEntry,
                             source_vertex: VertexData,
                             identified_vertex: VertexData,
                             rule_entry: VertexLinkRuleEntry,
-                            extracted_data: Dict, **kwargs) -> EdgeData:
+                            extracted_data: Dict, **kwargs):
     """Generate a PotentialEdge object between a known source object and a potential vertex
 
     Args:
@@ -39,5 +39,8 @@ def generate_potential_edge(schema_entry: SchemaEdgeEntry,
     inbound = rule_entry.inbound
     edge_data = edge_regulator.generate_potential_edge_data(
         source_vertex, identified_vertex, extracted_data, inbound)
-    _graph_cluster(source_vertex, identified_vertex, edge_data)
-    return edge_data
+    # _graph_cluster(source_vertex, identified_vertex, edge_data)
+    return {
+        'edge': edge_data,
+        'identified_vertex': identified_vertex
+    }

@@ -1,0 +1,181 @@
+{
+  "StartAt": "setup",
+  "States": {
+    "setup": {
+      "Type": "Pass",
+      "Result": {
+        "index": 0,
+        "count": 100
+      },
+      "ResultPath": "$.counter",
+      "Next": "increment_loop"
+    },
+    "increment_loop": {
+      "Type": "Task",
+      "InputPath": "$.counter",
+      "Resource": "arn:aws:lambda:us-east-1:726075243133:function:sfn_loop_counter",
+      "ResultPath": "$.counter",
+      "Next": "more_loops?"
+    },
+    "more_loops?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.counter.more",
+          "BooleanEquals": true,
+          "Next": "get_local_max"
+        }
+      ],
+      "Default": "start_new_machine"
+    },
+    "start_new_machine": {
+      "Type": "Task",
+      "Parameters": {
+        "machine_arn.$": "$$.StateMachine.Id",
+        "machine_input.$": "$$.Execution.Input"
+      },
+      "Resource": "arn:aws:lambda:us-east-1:726075243133:function:sfn_start_machine",
+      "Next": "success"
+    },
+    "get_local_max": {
+        "Type": "Task",
+        "Parameters": {
+          "table_name": "Migratory",
+          "key_name": "identifier",
+          "key_value.$": "$.identifier",
+          "default": {"id_value": 1},
+          "filter": "id_value"
+        },
+        "Resource": "arn:aws:lambda:us-east-1:726075243133:function:get_dynamo_max_value",
+        "ResultPath": "$.local_max",
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 3,
+            "MaxAttempts": 6,
+            "BackoffRate": 1.5
+          }
+        ],
+       "Next": "query_missing_values"
+     },
+    "query_missing_values": {
+      "Type": "Task",
+      "Parameters": {
+        "payload": {
+          "id_source.$": "$$.Execution.Input.id_source",
+          "object_type.$": "$$.Execution.Input.object_type",
+          "local_max.$": "$.local_max",
+          "max_entries": 500
+        }
+      },
+      "Resource": "arn:aws:lambda:us-east-1:726075243133:function:incredible-dev-GetObjectRange-Q8POK8UZD9H1",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 3,
+          "MaxAttempts": 6,
+          "BackoffRate": 1.5
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.error",
+          "Next": "fail"
+        }
+      ],
+      "ResultPath": "$.missing_values",
+      "Next": "notify_migration_start"
+    },
+    "notify_migration_start": {
+      "Type": "Task",
+      "Parameters": {
+        "stage_name": "migration_start",
+        "table_name": "Migratory",
+        "start_time.$": "$$.Execution.StartTime",
+        "id_values.$": "$.missing_values.id_values",
+        "identifier.$": "$$.Execution.Input.identifier"
+      },
+      "Resource": "arn:aws:lambda:us-east-1:726075243133:function:bulk_notify_dynamo",
+      "ResultPath": "$.notify_migration_start",
+      "Next": "extract_missing_values"
+    },
+    "extract_missing_values": {
+      "Type": "Task",
+      "Parameters": {
+        "payload": {
+          "extracted_data.$": "$.missing_values.results",
+          "object_type.$": "$$.Execution.Input.object_type",
+          "id_source.$": "$$.Execution.Input.id_source",
+          "id_values.$": "$.missing_values.id_values"
+        }
+      },
+      "Resource": "arn:aws:lambda:us-east-1:726075243133:function:incredible-dev-ExtractObjects-JGKSMQ5O845V",
+      "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 3,
+            "MaxAttempts": 6,
+            "BackoffRate": 1.5
+          }
+        ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.error",
+          "Next": "fail"
+        }
+      ],
+      "ResultPath": "$.extraction",
+      "Next": "mark_extraction_completed"
+    },
+    "mark_extraction_completed": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:726075243133:function:bulk_notify_dynamo",
+      "Parameters": {
+        "stage_name": "extraction",
+        "table_name": "Migratory",
+        "start_time.$": "$$.Execution.StartTime",
+        "id_values.$": "$.missing_values.id_values",
+        "stage_results.$": "$.extraction.value.pointer",
+         "identifier.$": "$$.Execution.Input.identifier"
+      },
+       "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.error",
+          "Next": "fail"
+        }
+      ],
+      "ResultPath": "$.mark_extraction",
+      "Next": "parse_extracted_values"
+    },
+    "parse_extracted_values": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:726075243133:function:incredible-dev-ParseExtractionBatch-5C6JKND2VUWC",
+      "ResultPath": "$.parsed",
+      "Next": "increment_loop"
+    },
+    "success": {
+      "Type": "Succeed"
+    },
+    "fail": {
+      "Type": "Fail"
+    }
+  }
+}

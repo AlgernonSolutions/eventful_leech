@@ -71,7 +71,7 @@ SEARCH_FOR_EXISTING_VERTEXES = '''
 '''
 
 LIST_EXISTING_VERTEXES = """
-query list_vertexes($identifier_stem: String!, $object_type: String!, $object_properties: [InputLocalProperty!], $token: ID) {
+query list_vertexes($identifier_stem: String!, $object_type: String!, $object_properties: [InputLocalProperty]!, $token: ID) {
   list_vertexes(identifier_stem:$identifier_stem, object_type: $object_type, object_properties: $object_properties, token: $token){
     vertexes{
           internal_id
