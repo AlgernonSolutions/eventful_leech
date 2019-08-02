@@ -46,7 +46,10 @@ def _derive_local_property_value(object_property) -> str:
     if property_data_type == 'S':
         property_value = json.dumps(property_value)
     if property_data_type == 'DT':
-        datetime_value = dateutil.parser.parse(property_value)
+        try:
+            datetime_value = dateutil.parser.parse(property_value)
+        except ValueError:
+            datetime_value = datetime.fromisoformat(property_value)
         iso_format = datetime_value.isoformat(sep='T')
         property_value = f"datetime('{iso_format}')"
     return property_value
