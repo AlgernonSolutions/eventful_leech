@@ -1,8 +1,10 @@
 import logging
 
+from aws_xray_sdk.core import xray_recorder
+
 from toll_booth.obj.graph.ogm import Ogm
 
-
+@xray_recorder.capture()
 def graph_handler(source_vertex, **kwargs):
     logging.info(f'received a call to the graph_handler: {source_vertex}, {kwargs}')
     graph_results = {}

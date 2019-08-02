@@ -2,6 +2,7 @@ from decimal import Decimal
 
 import boto3
 import rapidjson
+from aws_xray_sdk.core import xray_recorder
 from botocore.exceptions import ClientError
 
 from toll_booth.obj.data_objects import SensitivePropertyValue
@@ -105,6 +106,7 @@ def _store_to_s3(bucket_name, base_file_key, scalar, is_edge=False):
         }
 
 
+@xray_recorder.capture()
 def s3_handler(source_vertex, edge=None, other_vertex=None, **kwargs):
     s3_results = {}
     bucket_name = kwargs['bucket_name']

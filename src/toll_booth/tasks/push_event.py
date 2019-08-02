@@ -1,8 +1,8 @@
 import logging
 import boto3
 import rapidjson
+from aws_xray_sdk.core import xray_recorder
 
-from toll_booth.obj.scalars.inputs import InputVertex
 from toll_booth.obj.serializers import FireHoseEncoder
 
 
@@ -20,7 +20,8 @@ def _generate_new_object_event(new_object, is_edge=False):
     return event_entry
 
 
-def event_handler(source_vertex: InputVertex, **kwargs):
+@xray_recorder.capture()
+def event_handler(source_vertex, **kwargs):
     logging.info(f'received a call to the event_handler: {source_vertex}, {kwargs}')
     session = boto3.session.Session()
     event_client = session.client('events')

@@ -1,6 +1,8 @@
 import logging
 from decimal import Decimal
 
+from aws_xray_sdk.core import xray_recorder
+
 from toll_booth.obj.index.index_manager import IndexManager
 from toll_booth.obj.index.troubles import UniqueIndexViolationException
 
@@ -90,6 +92,7 @@ def _index_object(index_manager: IndexManager, scalar, is_edge=False):
         }
 
 
+@xray_recorder.capture()
 def index_handler(source_vertex, **kwargs):
     index_results = {}
     index_manager = IndexManager()

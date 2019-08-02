@@ -3,12 +3,19 @@ from unittest.mock import patch
 
 import pytest
 
+from toll_booth import handler
 from toll_booth.tasks import leech, graph_handler, index_handler, s3_handler
 
 
 @pytest.mark.tasks_integration
 @pytest.mark.usefixtures('integration_environment')
 class TestTasks:
+    @pytest.mark.handler
+    def test_handler(self, push_event, mock_context):
+        event = {'task_name': 'push_graph', 'task_kwargs': push_event}
+        results = handler(event, mock_context)
+        assert results
+
     @pytest.mark.aio
     def test_aio(self, aio_event):
         results = leech(**aio_event)
