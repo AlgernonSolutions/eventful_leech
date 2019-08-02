@@ -107,10 +107,13 @@ def _store_to_s3(bucket_name, base_file_key, scalar, is_edge=False):
 
 
 @xray_recorder.capture()
-def push_s3(source_vertex, edge=None, other_vertex=None, **kwargs):
+def push_s3(leech, **kwargs):
     s3_results = {}
     bucket_name = kwargs['bucket_name']
     base_file_key = kwargs['base_file_key']
+    source_vertex = leech['source_vertex']
+    edge = leech.get('edge')
+    other_vertex = leech.get('other_vertex')
     s3_results['source_vertex'] = _store_to_s3(bucket_name, base_file_key, source_vertex)
     if other_vertex:
         s3_results['other_vertex'] = _store_to_s3(bucket_name, base_file_key, other_vertex)

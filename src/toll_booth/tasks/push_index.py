@@ -93,11 +93,13 @@ def _index_object(index_manager: IndexManager, scalar, is_edge=False):
 
 
 @xray_recorder.capture()
-def push_index(source_vertex, **kwargs):
+def push_index(leech, **kwargs):
+    logging.info(f'received a call to the index_handler: {leech}, {kwargs}')
     index_results = {}
     index_manager = IndexManager()
-    edge = kwargs.get('edge')
-    other_vertex = kwargs.get('other_vertex')
+    source_vertex = leech['source_vertex']
+    edge = leech.get('edge')
+    other_vertex = leech.get('other_vertex')
     index_results['source_vertex'] = _index_object(index_manager, source_vertex)
     if other_vertex:
         index_results['other_vertex'] = _index_object(index_manager, other_vertex)
