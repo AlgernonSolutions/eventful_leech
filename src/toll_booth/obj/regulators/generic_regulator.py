@@ -175,7 +175,8 @@ class ObjectRegulator:
             except KeyError:
                 returned_properties[property_name] = MissingObjectProperty()
                 continue
-            test_property = set_property_data_type(entry_property, test_property)
+            data_type = type_map[entry_property.property_data_type]
+            test_property = set_property_data_type(data_type, test_property)
             returned_properties[property_name] = test_property
         return returned_properties
 

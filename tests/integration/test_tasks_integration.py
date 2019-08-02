@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from toll_booth import handler
-from toll_booth.tasks import leech, graph_handler, index_handler, s3_handler
+from toll_booth.tasks import leech, push_graph, push_index, push_s3
 
 
 @pytest.mark.tasks_integration
@@ -12,7 +12,7 @@ from toll_booth.tasks import leech, graph_handler, index_handler, s3_handler
 class TestTasks:
     @pytest.mark.handler
     def test_handler(self, aio_event, mock_context):
-        event = {'task_name': 'graph_handler', 'task_kwargs': aio_event}
+        event = {'task_name': 'leech', 'task_kwargs': aio_event}
         results = handler(event, mock_context)
         assert results
 
@@ -26,14 +26,14 @@ class TestTasks:
         os.environ['GRAPH_DB_ENDPOINT'] = 'some_endpoint'
         os.environ['GRAPH_DB_READER_ENDPOINT'] = 'some_endpoint'
         for entry in push_event:
-            results = graph_handler(**entry)
+            results = push_graph(**entry)
             assert results
 
     @pytest.mark.push_index
     def test_index_push(self, push_event):
         os.environ['INDEX_TABLE_NAME'] = 'Indexes'
         for entry in push_event:
-            results = index_handler(**entry)
+            results = push_index(**entry)
             assert results
 
     @pytest.mark.push_s3
@@ -47,5 +47,5 @@ class TestTasks:
             }
             for entry in push_event:
                 entry.update(push_kwargs)
-                results = s3_handler(**entry)
+                results = push_s3(**entry)
                 assert results
