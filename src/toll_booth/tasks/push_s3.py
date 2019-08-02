@@ -107,7 +107,7 @@ def _store_to_s3(bucket_name, base_file_key, scalar, is_edge=False):
 
 
 @xray_recorder.capture()
-def s3_handler(source_vertex, edge=None, other_vertex=None, **kwargs):
+def push_s3(source_vertex, edge=None, other_vertex=None, **kwargs):
     s3_results = {}
     bucket_name = kwargs['bucket_name']
     base_file_key = kwargs['base_file_key']

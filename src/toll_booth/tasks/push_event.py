@@ -21,7 +21,7 @@ def _generate_new_object_event(new_object, is_edge=False):
 
 
 @xray_recorder.capture()
-def event_handler(source_vertex, **kwargs):
+def push_event(source_vertex, **kwargs):
     logging.info(f'received a call to the event_handler: {source_vertex}, {kwargs}')
     session = boto3.session.Session()
     event_client = session.client('events')

@@ -11,8 +11,8 @@ from toll_booth.tasks import leech, graph_handler, index_handler, s3_handler
 @pytest.mark.usefixtures('integration_environment')
 class TestTasks:
     @pytest.mark.handler
-    def test_handler(self, push_event, mock_context):
-        event = {'task_name': 'push_graph', 'task_kwargs': push_event}
+    def test_handler(self, aio_event, mock_context):
+        event = {'task_name': 'graph_handler', 'task_kwargs': aio_event}
         results = handler(event, mock_context)
         assert results
 

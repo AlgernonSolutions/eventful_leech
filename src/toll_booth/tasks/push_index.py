@@ -93,7 +93,7 @@ def _index_object(index_manager: IndexManager, scalar, is_edge=False):
 
 
 @xray_recorder.capture()
-def index_handler(source_vertex, **kwargs):
+def push_index(source_vertex, **kwargs):
     index_results = {}
     index_manager = IndexManager()
     edge = kwargs.get('edge')

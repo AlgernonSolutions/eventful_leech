@@ -340,7 +340,7 @@ def _read_test_event(event_name):
         return event
 
 
-@pytest.fixture(params=['documentation_text_extracted_data'])
+@pytest.fixture(params=['leech_start'])
 def aio_event(request):
     return _read_test_event(request.param)
 
@@ -348,3 +348,4 @@ def aio_event(request):
 @pytest.fixture(params=['documentation_text_push'])
 def push_event(request):
     return _read_test_event(request.param)
+
