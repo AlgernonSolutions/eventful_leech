@@ -21,15 +21,16 @@ def _generate_new_object_event(new_object, is_edge=False):
 
 
 @xray_recorder.capture()
-def push_event(source_vertex, **kwargs):
-    logging.info(f'received a call to the event_handler: {source_vertex}, {kwargs}')
+def push_event(leech, **kwargs):
+    logging.info(f'received a call to the event_handler: {leech}, {kwargs}')
     session = boto3.session.Session()
     event_client = session.client('events')
+    source_vertex = leech['source_vertex']
     entries = [_generate_new_object_event(source_vertex)]
-    if kwargs.get('edge'):
-        entries.append(_generate_new_object_event(kwargs['edge'], is_edge=True))
-    if kwargs.get('target_vertex'):
-        entries.append(_generate_new_object_event(kwargs['target_vertex']))
+    if leech.get('edge'):
+        entries.append(_generate_new_object_event(leech['edge'], is_edge=True))
+    if leech.get('target_vertex'):
+        entries.append(_generate_new_object_event(leech['target_vertex']))
     response = event_client.put_events(Entries=entries)
     failed = [x for x in response['Entries'] if 'ErrorCode' in x]
     if failed:
