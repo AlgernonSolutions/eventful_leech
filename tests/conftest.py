@@ -346,6 +346,6 @@ def aio_event(request):
 
 
 @pytest.fixture(params=['documentation_text_push'])
-def push_event(request):
+def test_push_event(request):
     return _read_test_event(request.param)
 

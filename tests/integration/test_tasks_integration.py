@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from toll_booth import handler
-from toll_booth.tasks import leech, push_graph, push_index, push_s3
+from toll_booth.tasks import leech, push_graph, push_index, push_s3, push_event
 
 
 @pytest.mark.tasks_integration
@@ -22,22 +22,22 @@ class TestTasks:
         assert results
 
     @pytest.mark.push_graph
-    def test_graph_push(self, push_event):
+    def test_graph_push(self, test_push_event):
         os.environ['GRAPH_DB_ENDPOINT'] = 'some_endpoint'
         os.environ['GRAPH_DB_READER_ENDPOINT'] = 'some_endpoint'
-        for entry in push_event:
+        for entry in test_push_event['leech']:
             results = push_graph(**entry)
             assert results
 
     @pytest.mark.push_index
-    def test_index_push(self, push_event):
+    def test_index_push(self, test_push_event):
         os.environ['INDEX_TABLE_NAME'] = 'Indexes'
-        for entry in push_event:
+        for entry in test_push_event['leech']:
             results = push_index(**entry)
             assert results
 
     @pytest.mark.push_s3
-    def test_s3_push(self, push_event):
+    def test_s3_push(self, test_push_event):
         with patch('toll_booth.tasks.push_s3._check_for_object') as mock_check:
             mock_check.return_value = False
             os.environ['INDEX_TABLE_NAME'] = 'Indexes'
@@ -45,7 +45,14 @@ class TestTasks:
                 'bucket_name': 'algernonsolutions-leech-dev',
                 'base_file_key': 'bulk'
             }
-            for entry in push_event:
+            for entry in test_push_event['leech']:
                 entry.update(push_kwargs)
                 results = push_s3(**entry)
                 assert results
+
+    @pytest.mark.push_events
+    def test_events_push(self, test_push_event):
+        test_push_event = test_push_event['leech']
+        for entry in test_push_event:
+            results = push_event(leech=entry)
+            assert results is None

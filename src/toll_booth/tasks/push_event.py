@@ -13,7 +13,7 @@ def _generate_new_object_event(new_object, is_edge=False):
     event_entry = {
         'Source': 'algernon',
         'DetailType': detail_type,
-        'Detail': rapidjson.dumps(new_object.for_index, default=FireHoseEncoder.default),
+        'Detail': rapidjson.dumps(new_object, default=FireHoseEncoder.default),
         'Resources': []
     }
     logging.debug(f'generated event for {new_object}: {event_entry}')
