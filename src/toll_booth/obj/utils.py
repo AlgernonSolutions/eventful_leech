@@ -15,7 +15,8 @@ def set_property_data_type(data_type: str, property_value: str, **kwargs) -> Uni
     if data_type == 'S':
         return str(property_value)
     if data_type == 'DT':
-        return dateutil.parser.parse(property_value)
+        datetime_value = dateutil.parser.parse(property_value)
+        return datetime_value.isoformat(sep='T')
     if data_type == 'B':
         return property_value == 'True'
     raise NotImplementedError(

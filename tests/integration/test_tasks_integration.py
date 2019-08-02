@@ -2,6 +2,7 @@ import os
 from unittest.mock import patch
 
 import pytest
+from algernon import rebuild_event
 
 from toll_booth import handler
 from toll_booth.tasks import leech, push_graph, push_index, push_s3, push_event
@@ -18,6 +19,7 @@ class TestTasks:
 
     @pytest.mark.aio
     def test_aio(self, aio_event):
+        aio_event = rebuild_event(aio_event)
         results = leech(**aio_event)
         assert results
 
@@ -26,7 +28,7 @@ class TestTasks:
         os.environ['GRAPH_DB_ENDPOINT'] = 'some_endpoint'
         os.environ['GRAPH_DB_READER_ENDPOINT'] = 'some_endpoint'
         for entry in test_push_event['leech']:
-            results = push_graph(**entry)
+            results = push_graph(leech=entry)
             assert results
 
     @pytest.mark.push_index

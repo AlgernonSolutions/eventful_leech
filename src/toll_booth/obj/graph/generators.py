@@ -1,6 +1,8 @@
 import json
 from datetime import datetime
 
+import dateutil
+
 from toll_booth.obj.data_objects.graph_objects import VertexData, EdgeData
 
 
@@ -44,7 +46,9 @@ def _derive_local_property_value(object_property) -> str:
     if property_data_type == 'S':
         property_value = json.dumps(property_value)
     if property_data_type == 'DT':
-        property_value = f"datetime('{property_value}')"
+        datetime_value = dateutil.parser.parse(property_value)
+        iso_format = datetime_value.isoformat(sep='T')
+        property_value = f"datetime('{iso_format}')"
     return property_value
 
 
