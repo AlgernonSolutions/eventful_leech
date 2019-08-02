@@ -9,6 +9,12 @@ Parameters:
     AllowedValues:
       - 'False'
       - 'True'
+  NeptuneSecurityGroupIds:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Description: A collection of Security Group IDs capable of interacting with the Neptune Cluster
+  NeptuneSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: A collection of Subnet IDs which can interact with the Neptune Cluster
   DataGqlEndpoint:
     Type: String
     Description: the endpoint of the GQL API used to interface with the data layer
@@ -50,6 +56,15 @@ Resources:
       Role: !ImportValue dev-worker-role-arn
       Timeout: 45
       CodeUri: src/
+  VpcLeech:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: toll_booth.handler
+      CodeUri: src/
+      Role: !ImportValue dev-worker-role-arn
+      VpcConfig:
+        SecurityGroupIds: !Ref NeptuneSecurityGroupIds
+        SubnetIds: !Ref NeptuneSubnetIds
   StarterH:
     Type: AWS::Serverless::Function
     Properties:
