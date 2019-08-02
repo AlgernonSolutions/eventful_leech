@@ -14,7 +14,7 @@ class Overseer:
     def progress_key(self):
         return {
             'identifier': self._identifier,
-            'id_value': self._id_value
+            'id_value': int(self._id_value)
         }
 
     def mark_stage_completed(self, stage_name, stage_results=None):

@@ -2,23 +2,11 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Dict, Union, List, Tuple
 
-import dateutil
 from algernon import AlgObject
-from pytz import timezone
 
 from toll_booth.obj.data_objects.identifiers import IdentifierStem
 from toll_booth.obj.schemata.schema_entry import SchemaVertexEntry
-
-
-def _convert_python_datetime_to_gremlin(python_datetime: datetime) -> str:
-    gremlin_format = '%Y-%m-%dT%H:%M:%S%z'
-    if isinstance(python_datetime, str):
-        python_datetime = dateutil.parser.parse(python_datetime)
-    if not python_datetime.tzinfo:
-        naive_datetime = python_datetime.replace(tzinfo=None)
-        utc_datetime = timezone('UTC').localize(naive_datetime)
-        return utc_datetime.strftime(gremlin_format)
-    return python_datetime.strftime(gremlin_format)
+from toll_booth.obj.utils import set_property_data_type
 
 
 def _parse_gql_property(gql_property_data: Dict[str, str]) -> Tuple[str, Dict[str, str]]:
@@ -35,25 +23,6 @@ def _parse_gql_property(gql_property_data: Dict[str, str]) -> Tuple[str, Dict[st
         del(gql_property_data['stored_data_type'])
         return 'stored_properties', gql_property_data
     return property_type, gql_property_data
-
-
-def _set_property_data_type(property_name: str,
-                            data_type: str,
-                            property_value: str) -> Union[None, Decimal, str, bool, datetime]:
-    if not property_value:
-        return None
-    if property_value == '':
-        return None
-    if data_type == 'N':
-        return Decimal(property_value)
-    if data_type == 'S':
-        return str(property_value)
-    if data_type == 'DT':
-        return dateutil.parser.parse(property_value)
-    if data_type == 'B':
-        return property_value == 'True'
-    raise NotImplementedError(
-        f'data type {data_type} for property named: {property_name} is unknown to the system')
 
 
 class VertexData(AlgObject):
@@ -129,11 +98,11 @@ class VertexData(AlgObject):
 
     @property
     def id_value(self) -> Union[str, Decimal, datetime]:
-        return _set_property_data_type(**self._id_value)
+        return set_property_data_type(**self._id_value)
 
     @property
     def identifier_stem(self) -> str:
-        return _set_property_data_type(**self._identifier_stem)
+        return set_property_data_type(**self._identifier_stem)
 
     @property
     def vertex_properties(self):
@@ -189,7 +158,7 @@ class VertexData(AlgObject):
             return self.id_value
         if item == 'identifier_stem':
             return self.identifier_stem
-        return _set_property_data_type(**self.get_vertex_property('local_properties', item))
+        return set_property_data_type(**self.get_vertex_property('local_properties', item))
 
     def is_schema_complete(self, schema_entry: SchemaVertexEntry):
         return self.is_identifiable(schema_entry) and self.is_properties_complete(schema_entry)
@@ -293,6 +262,8 @@ class EdgeData(VertexData):
         return {
             'edge_label': self.object_type,
             'internal_id': self.internal_id,
+            'id_value': self._id_value,
+            'identifier_stem': self._identifier_stem,
             'source_vertex_internal_id': self._source_vertex_internal_id,
             'target_vertex_internal_id': self._target_vertex_internal_id,
             'edge_properties': self.edge_properties

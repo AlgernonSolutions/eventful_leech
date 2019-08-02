@@ -4,8 +4,8 @@ from decimal import Decimal
 
 import dateutil
 
-from toll_booth.obj.data_objects import SensitiveData
-from toll_booth.obj.data_objects.stored_data import S3StoredData
+from toll_booth.obj.data_objects import SensitivePropertyValue
+from toll_booth.obj.data_objects.object_properties.stored_property import S3StoredPropertyValue
 
 
 def _set_object_property_value(data_type, obj_value):
@@ -39,14 +39,14 @@ class GqlResolver(json.JSONDecoder):
         if alg_class == 'SensitivePropertyValue':
             pointer = obj_value['pointer']
             data_type = obj_value['sensitive_data_type']
-            sensitive_data = SensitiveData.from_insensitive(pointer)
+            sensitive_data = SensitivePropertyValue.from_insensitive(pointer)
             return _set_object_property_value(data_type, sensitive_data)
         if alg_class == 'StoredPropertyValue':
             data_type = obj_value['stored_data_type']
             storage_class = obj_value['storage_class']
             storage_uri = obj_value['storage_uri']
             if storage_class == 's3':
-                s3_data = S3StoredData(data_type, storage_class, storage_uri)
+                s3_data = S3StoredPropertyValue(data_type, storage_class, storage_uri)
                 return _set_object_property_value(data_type, s3_data.retrieve())
         return obj
 

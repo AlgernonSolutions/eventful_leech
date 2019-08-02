@@ -343,3 +343,8 @@ def _read_test_event(event_name):
 @pytest.fixture(params=['documentation_text_extracted_data'])
 def aio_event(request):
     return _read_test_event(request.param)
+
+
+@pytest.fixture(params=['documentation_text_push'])
+def push_event(request):
+    return _read_test_event(request.param)
