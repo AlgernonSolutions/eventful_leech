@@ -1,12 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Outputs:
-  WorkerRoleArn:
-    Export:
-      Name: dev-worker-role-arn
-    Description: the ARN of the generated worker IAM role
-    Value: !GetAtt
-      - worker
-      - Arn
+
 Resources:
   readSecrets:
     Type: 'AWS::IAM::Policy'
@@ -17,55 +10,6 @@ Resources:
         Statement:
           - Action:
               - 'secretsmanager:GetSecretValue'
-            Resource: '*'
-            Effect: Allow
-      Roles:
-        - !Ref worker
-  workSwf:
-    Type: 'AWS::IAM::Policy'
-    Properties:
-      PolicyName: workSwf
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Action:
-              - 'swf:CountPendingActivityTasks'
-              - 'swf:RespondActivityTaskCanceled'
-              - 'swf:RequestCancelWorkflowExecution'
-              - 'swf:SignalExternalWorkflowExecution'
-              - 'swf:RespondDecisionTaskCompleted'
-              - 'swf:CountClosedWorkflowExecutions'
-              - 'swf:RespondActivityTaskFailed'
-              - 'swf:StartWorkflowExecution'
-              - 'swf:PollForDecisionTask'
-              - 'swf:FailWorkflowExecution'
-              - 'swf:RequestCancelExternalWorkflowExecution'
-              - 'swf:RequestCancelActivityTask'
-              - 'swf:ListOpenWorkflowExecutions'
-              - 'swf:StartTimer'
-              - 'swf:DescribeDomain'
-              - 'swf:RecordActivityTaskHeartbeat'
-              - 'swf:SignalWorkflowExecution'
-              - 'swf:ContinueAsNewWorkflowExecution'
-              - 'swf:RespondActivityTaskCompleted'
-              - 'swf:TerminateWorkflowExecution'
-              - 'swf:DescribeActivityType'
-              - 'swf:PollForActivityTask'
-              - 'swf:ListActivityTypes'
-              - 'swf:CancelWorkflowExecution'
-              - 'swf:StartChildWorkflowExecution'
-              - 'swf:CompleteWorkflowExecution'
-              - 'swf:DescribeWorkflowType'
-              - 'swf:CancelTimer'
-              - 'swf:RecordMarker'
-              - 'swf:ListWorkflowTypes'
-              - 'swf:GetWorkflowExecutionHistory'
-              - 'swf:CountOpenWorkflowExecutions'
-              - 'swf:ScheduleActivityTask'
-              - 'swf:CountPendingDecisionTasks'
-              - 'swf:DescribeWorkflowExecution'
-              - 'swf:ListDomains'
-              - 'swf:ListClosedWorkflowExecutions'
             Resource: '*'
             Effect: Allow
       Roles:
@@ -157,6 +101,7 @@ Resources:
         Statement:
           - Action:
               - 'ssm:GetParameter'
+              - 'ssm:GetParameters'
               - 'ssm:PutParameter'
               - 'ssm:GetParameterHistory'
               - 'ssm:DeleteParameter'
@@ -239,30 +184,6 @@ Resources:
     Type: 'AWS::IAM::Policy'
     Properties:
       PolicyName: workDynamo
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Action:
-              - 'dynamodb:BatchGetItem'
-              - 'dynamodb:BatchWriteItem'
-              - 'dynamodb:ListGlobalTables'
-              - 'dynamodb:PutItem'
-              - 'dynamodb:ListTables'
-              - 'dynamodb:DescribeTable'
-              - 'dynamodb:ListBackups'
-              - 'dynamodb:GetItem'
-              - 'dynamodb:Scan'
-              - 'dynamodb:Query'
-              - 'dynamodb:UpdateItem'
-              - 'dynamodb:DescribeTimeToLive'
-            Resource: '*'
-            Effect: Allow
-      Roles:
-        - !Ref worker
-  workSensitives:
-    Type: 'AWS::IAM::Policy'
-    Properties:
-      PolicyName: workSenstives
       PolicyDocument:
         Version: 2012-10-17
         Statement:
