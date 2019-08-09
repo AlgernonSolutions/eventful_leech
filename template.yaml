@@ -15,22 +15,6 @@ Parameters:
   NeptuneSubnetIds:
     Type: List<AWS::EC2::Subnet::Id>
     Description: A collection of Subnet IDs which can interact with the Neptune Cluster
-  DataGqlEndpoint:
-    Type: String
-    Description: the endpoint of the GQL API used to interface with the data layer
-  EncounterBucketName:
-    Type: String
-    Description: the bucket used to hold documentation for encounters
-  StorageBucketName:
-    Type: String
-    Description: the bucket used by the module for storage
-  SensitivesTableName:
-    Type: String
-    Description: the table holding the PHI information
-    Default: 'Sensitives'
-  FireHoseName:
-    Type: String
-    Description: the Firehose stream used to push objects to S3
 
 Conditions:
   DevDeploy: !Equals [!Ref IsDev, 'True']
@@ -43,10 +27,6 @@ Globals:
     Environment:
       Variables:
         DEBUG: !Ref IsDev
-        SENSITIVES_TABLE_NAME: !Ref SensitivesTableName
-        STORAGE_BUCKET_NAME: !Ref StorageBucketName
-        ENCOUNTER_BUCKET: !Ref EncounterBucketName
-        FIRE_HOSE_NAME: !Ref FireHoseName
 
 Resources:
   LeechH:

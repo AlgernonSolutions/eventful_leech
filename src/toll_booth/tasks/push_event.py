@@ -29,8 +29,8 @@ def push_event(leech, **kwargs):
     entries = [_generate_new_object_event(source_vertex)]
     if leech.get('edge'):
         entries.append(_generate_new_object_event(leech['edge'], is_edge=True))
-    if leech.get('target_vertex'):
-        entries.append(_generate_new_object_event(leech['target_vertex']))
+    if leech.get('other_vertex'):
+        entries.append(_generate_new_object_event(leech['other_vertex']))
     response = event_client.put_events(Entries=entries)
     failed = [x for x in response['Entries'] if 'ErrorCode' in x]
     if failed:

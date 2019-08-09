@@ -10,6 +10,10 @@ Parameters:
     Type: String
     Description: name to be assigned to the table which will hold the indexes
     Default: Indexes
+  MigrationTableName:
+    Type: String
+    Description: the name to associate with the migration table
+    Default: Migration
 Resources:
   SensitivesTable:
     Type: 'AWS::DynamoDB::Table'
@@ -24,23 +28,38 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       SSESpecification:
         SSEEnabled: true
+  MigrationTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: !Ref MigrationTableName
+      AttributeDefinitions:
+        - AttributeName: identifier
+          AttributeType: S
+        - AttributeName: id_value
+          AttributeType: N
+      KeySchema:
+        - AttributeName: identifier
+          KeyType: HASH
+        - AttributeName: id_value
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
   IndexTable:
     Type: 'AWS::DynamoDB::Table'
     Properties:
       TableName: !Ref IndexTableName
       AttributeDefinitions:
-        - AttributeName: identifier_stem
+        - AttributeName: identifier
           AttributeType: S
         - AttributeName: sid_value
           AttributeType: S
         - AttributeName: internal_id
           AttributeType: S
-        - AttributeName: fungal_stem
-          AttributeType: S
         - AttributeName: numeric_id_value
-          AttributeType: 'N'
+          AttributeType: N
       KeySchema:
-        - AttributeName: identifier_stem
+        - AttributeName: identifier
           KeyType: HASH
         - AttributeName: sid_value
           KeyType: RANGE
@@ -49,21 +68,13 @@ Resources:
           KeySchema:
             - AttributeName: internal_id
               KeyType: HASH
-            - AttributeName: identifier_stem
+            - AttributeName: identifier
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
-        - IndexName: fungal_index
+        - IndexName: identifier_index
           KeySchema:
-            - AttributeName: fungal_stem
-              KeyType: HASH
-            - AttributeName: numeric_id_value
-              KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
-        - IndexName: identifier_stem_index
-          KeySchema:
-            - AttributeName: identifier_stem
+            - AttributeName: identifier
               KeyType: HASH
             - AttributeName: numeric_id_value
               KeyType: RANGE
@@ -73,9 +84,12 @@ Resources:
       SSESpecification:
         SSEEnabled: true
 Outputs:
-  SensitivesTableArn:
-    Description: the arn of the generated table used to house PHI
-    Value: !GetAtt SensitivesTable.Arn
-  IndexTableArn:
-    Description: the arn of the generated table to be used for indexing
-    Value: !GetAtt IndexTable.Arn
+  SensitivesTableName:
+    Description: the name of the generated table used to house PHI
+    Value: !Ref SensitivesTableName
+  IndexTableName:
+    Description: the name of the generated table to be used for indexing
+    Value: !Ref IndexTableName
+  MigrationTableName:
+    Description: the name of the generated table to be used to track object migration
+    Value: !Ref MigrationTableName

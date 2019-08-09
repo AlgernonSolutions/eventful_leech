@@ -3,8 +3,6 @@ from datetime import datetime
 
 import dateutil
 
-from toll_booth.obj.data_objects.graph_objects import VertexData, EdgeData
-
 
 def _derive_object_properties(object_properties) -> str:
     property_commands = []

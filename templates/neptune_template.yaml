@@ -15,6 +15,12 @@ Parameters:
       - db.r4.4xlarge
       - db.r4.8xlarge
     Default: db.r4.large
+  VpcSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: the list of VPC subnets for the cluster
+  VpcAZs:
+    Type: List<AWS::EC2::AvailabilityZone::Name>
+    Description: the list of availability zones for the cluster
 Resources:
   GraphClusterParameterGroup:
     Type: "AWS::Neptune::DBClusterParameterGroup"
@@ -46,17 +52,11 @@ Resources:
         - "-"
         - - !Ref GraphClusterName
           - subnet-group
-      SubnetIds:
-         - !ImportValue vpc-subnet-1
-         - !ImportValue vpc-subnet-2
-         - !ImportValue vpc-subnet-3
+      SubnetIds: !Ref VpcSubnetIds
   GraphCluster:
     Type: "AWS::Neptune::DBCluster"
     Properties:
-      AvailabilityZones:
-         - !ImportValue vpc-subnet-az-1
-         - !ImportValue vpc-subnet-az-2
-         - !ImportValue vpc-subnet-az-3
+      AvailabilityZones: !Ref VpcAZs
       BackupRetentionPeriod: 15
       DBClusterIdentifier: !Join
         - "-"

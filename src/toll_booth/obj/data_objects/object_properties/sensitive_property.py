@@ -38,7 +38,7 @@ class SensitivePropertyValue:
         Returns:
 
         """
-        sensitive_table_name = os.environ['SENSITIVE_TABLE']
+        sensitive_table_name = os.environ['SENSITIVE_TABLE_NAME']
         resource = boto3.resource('dynamodb')
         table = resource.Table(sensitive_table_name)
         results = table.get_item(Key={'insensitive': pointer})
@@ -74,7 +74,7 @@ class SensitivePropertyValue:
         """
         import boto3
         from botocore.exceptions import ClientError
-        sensitive_table_name = os.environ['SENSITIVE_TABLE']
+        sensitive_table_name = os.environ['SENSITIVE_TABLE_NAME']
         resource = boto3.resource('dynamodb')
         table = resource.Table(sensitive_table_name)
         pointer = self._create_pointer()

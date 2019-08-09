@@ -7,8 +7,12 @@ from unittest.mock import patch
 import pytest
 from algernon import ajson
 
-from test_setup import mock_objs
 from toll_booth.obj.schemata.schema import Schema
+
+
+@pytest.fixture
+def fire_hose_event():
+    return _read_test_event('fire_hose_event_2')
 
 
 @pytest.fixture
@@ -335,7 +339,7 @@ def _generate_linking_rule(schema_entry, edge_type):
 
 def _read_test_event(event_name):
     user_home = path.expanduser('~')
-    with open(path.join(str(user_home), '.algernon', 'pusher', f'{event_name}.json')) as json_file:
+    with open(path.join(str(user_home), '.algernon', 'eventful_leech', f'{event_name}.json')) as json_file:
         event = json.load(json_file)
         return event
 
@@ -345,7 +349,7 @@ def aio_event(request):
     return _read_test_event(request.param)
 
 
-@pytest.fixture(params=['documentation_text_push'])
+@pytest.fixture(params=['push_event'])
 def test_push_event(request):
     return _read_test_event(request.param)
 
