@@ -67,7 +67,7 @@ class VertexData(AlgObject):
         json_dict['id_value'] = id_value
         identifier_stem = gql_dict['identifier_stem']
         del(identifier_stem['__typename'])
-        json_dict['identifier_stem'] = identifier_stem
+        json_dict['identifier'] = identifier_stem
         object_properties_data = gql_dict['vertex_properties']
         for entry in object_properties_data:
             property_class, object_property = _parse_gql_property(entry)
@@ -79,7 +79,7 @@ class VertexData(AlgObject):
     @classmethod
     def parse_json(cls, json_dict):
         return cls(
-            json_dict['object_type'], json_dict['internal_id'], json_dict['identifier_stem'],
+            json_dict['object_type'], json_dict['internal_id'], json_dict['identifier'],
             json_dict['id_value'], json_dict.get('local_properties'),
             json_dict.get('stored_properties'), json_dict.get('sensitive_properties')
         )
@@ -156,7 +156,7 @@ class VertexData(AlgObject):
             return self._internal_id
         if item == 'id_value':
             return self.id_value
-        if item == 'identifier_stem':
+        if item == 'identifier':
             return self.identifier_stem
         return set_property_data_type(**self.get_vertex_property('local_properties', item))
 
@@ -214,7 +214,7 @@ class EdgeData(VertexData):
             'property_value': internal_id
         }
         vertex_kwargs = {
-            'object_type': object_type, 'internal_id': internal_id, 'identifier_stem': identifier_stem,
+            'object_type': object_type, 'internal_id': internal_id, 'identifier': identifier_stem,
             'id_value': id_value, 'local_properties': local_properties,
             'stored_properties': stored_properties, 'sensitive_properties': sensitive_properties}
         super().__init__(**vertex_kwargs)
@@ -263,7 +263,7 @@ class EdgeData(VertexData):
             'edge_label': self.object_type,
             'internal_id': self.internal_id,
             'id_value': self._id_value,
-            'identifier_stem': self._identifier_stem,
+            'identifier': self._identifier_stem,
             'source_vertex_internal_id': self._source_vertex_internal_id,
             'target_vertex_internal_id': self._target_vertex_internal_id,
             'edge_properties': self.edge_properties

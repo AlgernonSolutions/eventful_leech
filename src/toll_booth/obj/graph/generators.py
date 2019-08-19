@@ -100,24 +100,8 @@ def create_vertex_command(internal_id: str,
 
 
 def create_vertex_command_from_scalar(vertex_data):
-    #kwargs = {
-    #    'vertex_internal_id': vertex_data.internal_id,
-    #    'vertex_type': vertex_data.object_type,
-    #    'id_value': vertex_data.id_value,
-    #    'identifier_stem': vertex_data.identifier_stem,
-    #    'vertex_properties': vertex_data.vertex_properties
-    #}
     return create_vertex_command(**vertex_data)
 
 
 def create_edge_command_from_scalar(edge_data):
-    #kwargs = {
-    #    'edge_internal_id': edge_data.internal_id,
-    #    'edge_label': edge_data.object_type,
-    #    'id_value': edge_data.id_value,
-    #    'identifier_stem': edge_data.identifier_stem,
-    #    'from_internal_id': edge_data.source_vertex_internal_id,
-    #    'to_internal_id': edge_data.target_vertex_internal_id,
-    #    'edge_properties': edge_data.edge_properties
-    #}
     return create_edge_command(**edge_data)
