@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 import uuid
 
@@ -7,7 +8,30 @@ import rapidjson
 from algernon.aws import lambda_logged, ruffians, StoredData
 
 
+ENVIRON_VARIABLES = [
+    'ALGERNON_BUCKET_NAME',
+    'STORAGE_BUCKET_NAME',
+    'ENCOUNTER_BUCKET_NAME',
+    'GRAPH_GQL_ENDPOINT',
+    'GRAPH_DB_ENDPOINT',
+    'GRAPH_DB_READER_ENDPOINT',
+    'INDEX_TABLE_NAME',
+    'SENSITIVE_TABLE_NAME',
+    'PROGRESS_TABLE_NAME',
+    'FIRE_HOSE_NAME'
+]
+
+
+def _load_config(variable_names):
+    client = boto3.client('ssm')
+    response = client.get_parameters(Names=[x for x in variable_names])
+    results = [(x['Name'], x['Value']) for x in response['Parameters']]
+    for entry in results:
+        os.environ[entry[0]] = entry[1]
+
+
 def _retrieve_event_driven_payload(original_payload):
+    _load_config(ENVIRON_VARIABLES)
     logging.info(f'received a notice of a new s3_object: {original_payload}')
     pattern = re.compile(r'#!#')
     event_detail = original_payload['detail']
