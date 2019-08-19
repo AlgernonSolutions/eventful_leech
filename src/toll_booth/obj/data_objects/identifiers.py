@@ -1,7 +1,3 @@
-import json
-import re
-from collections import OrderedDict
-
 from algernon import AlgObject
 
 
@@ -20,12 +16,12 @@ class InternalId:
 
 
 class IdentifierStem(AlgObject):
-    def __init__(self, graph_type, object_type, paired_identifiers=None):
-        if not paired_identifiers:
-            paired_identifiers = OrderedDict()
+    def __init__(self, graph_type, object_type, identifiers=None):
+        if not identifiers:
+            identifiers = []
         self._graph_type = graph_type
         self._object_type = object_type
-        self._paired_identifiers = paired_identifiers
+        self._identifiers = identifiers
 
     @classmethod
     def from_raw(cls, identifier_stem):
@@ -34,12 +30,10 @@ class IdentifierStem(AlgObject):
         pieces = identifier_stem.split('#')
         graph_type = pieces[1]
         object_type = pieces[2]
-        paired_identifiers = {}
-        pattern = re.compile('({(.*?)})')
-        potential_pairs = pattern.search(identifier_stem)
-        if potential_pairs:
-            paired_identifiers = json.loads(potential_pairs.group(0), object_pairs_hook=OrderedDict)
-        return cls(graph_type, object_type, paired_identifiers)
+        identifiers = []
+        if len(pieces) > 2:
+            identifiers = pieces[3:]
+        return cls(graph_type, object_type, identifiers)
 
     @classmethod
     def for_stub(cls, stub_vertex):
@@ -72,64 +66,13 @@ class IdentifierStem(AlgObject):
         return self._object_type
 
     @property
-    def paired_identifiers(self):
-        return self._paired_identifiers
-
-    @property
     def is_edge(self):
         return self._graph_type == 'edge'
 
-    @property
-    def for_dynamo(self):
-        return f'#SOURCE{str(self)}'
-
-    @property
-    def for_extractor(self):
-        extractor_data = self._paired_identifiers.copy()
-        extractor_data.update({
-            'graph_type': self._graph_type,
-            'object_type': self._object_type
-        })
-        return extractor_data
-
-    @property
-    def is_stub(self):
-        return '::stub' in self._object_type
-
-    @property
-    def as_stub_for_object(self):
-        return f'''#{self._graph_type}#{self._object_type}::stub#{self._string_paired_identifiers()}#'''
-
-    def specify(self, identifier_stem, id_value):
-        paired_identifiers = self._paired_identifiers.copy()
-        paired_identifiers['identifier_stem'] = str(identifier_stem)
-        paired_identifiers['id_value'] = int(id_value)
-        return IdentifierStem(self._graph_type, self._object_type, paired_identifiers)
-
-    def _string_paired_identifiers(self):
-        identifier = {x: str(y) for x, y in self._paired_identifiers.items()}
-        return json.dumps(identifier)
-
-    def get(self, item):
-        if item == 'graph_type':
-            return self._graph_type
-        if item == 'object_type':
-            return self._object_type
-        if item in self._paired_identifiers.keys():
-            return self._paired_identifiers[item]
-        raise AttributeError
-
-    def __getitem__(self, item):
-        if item == 'graph_type':
-            return self._graph_type
-        if item == 'object_type':
-            return self._object_type
-        if item in self._paired_identifiers:
-            return self._paired_identifiers[item]
-        raise AttributeError
-
     def __str__(self):
-        return f'''#{self._graph_type}#{self._object_type}#{self._string_paired_identifiers()}#'''
+        if not self._identifiers:
+            return f'#{self._graph_type}#{self._object_type}#'
+        return f'''#{self._graph_type}#{self._object_type}{"#".join(self._identifiers)}#'''
 
 
 class MissingObjectProperty(AlgObject):

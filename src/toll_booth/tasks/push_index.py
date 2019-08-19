@@ -49,7 +49,7 @@ def _format_object_for_index(scalar, is_edge=False):
     id_value = scalar['id_value']['property_value']
     object_for_index = {
         'sid_value': str(id_value),
-        'identifier_stem': str(identifier_stem),
+        'identifier': str(identifier_stem),
         'internal_id': str(scalar['internal_id']),
         'id_value': id_value,
         'object_type': scalar[object_type_property]

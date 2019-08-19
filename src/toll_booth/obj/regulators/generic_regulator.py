@@ -252,7 +252,7 @@ class ObjectRegulator:
 
         """
         try:
-            paired_identifiers = {}
+            paired_identifiers = []
 
             identifier_stem_key = self._schema_entry.identifier_stem
             object_type = self._schema_entry.object_type
@@ -265,7 +265,7 @@ class ObjectRegulator:
                     return self._schema_entry.identifier_stem
                 if key_value is None and '::stub' not in object_type:
                     object_type = object_type + '::stub'
-                paired_identifiers[field_name] = key_value
+                paired_identifiers.append(key_value)
             identifier_stem = IdentifierStem('vertex', object_type, paired_identifiers)
             return {
                 'data_type': 'S',

@@ -18,6 +18,9 @@ Parameters:
   VpcSubnetIds:
     Type: List<AWS::EC2::Subnet::Id>
     Description: the list of VPC subnets for the cluster
+  VpcSgIds:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Description: a list of the VPC security groups applicable to the cluster
   VpcAZs:
     Type: List<AWS::EC2::AvailabilityZone::Name>
     Description: the list of availability zones for the cluster
@@ -66,8 +69,7 @@ Resources:
       DBSubnetGroupName: !Ref GraphSubnetGroup
       IamAuthEnabled: true
       StorageEncrypted: true
-      VpcSecurityGroupIds:
-        - !ImportValue vpc-sg
+      VpcSecurityGroupIds: !Ref VpcSgIds
   GraphDbInstance1:
     Type: "AWS::Neptune::DBInstance"
     Properties:

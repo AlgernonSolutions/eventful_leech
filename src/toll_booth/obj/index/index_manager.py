@@ -86,7 +86,7 @@ class IndexManager:
         self._table = boto3.resource('dynamodb').Table(self._table_name)
         self._indexes = indexes
 
-    # @xray_recorder.capture()
+    @xray_recorder.capture()
     def index_object(self, scalar_object, is_edge=False):
         """
 
@@ -223,7 +223,7 @@ class IndexManager:
         object_type, vertex_properties = scan_args['object_type'], scan_args['vertex_properties']
         segment, total_segments = scan_args['segment'], scan_args['total_segments']
         paginator = boto3.client('dynamodb').get_paginator('scan')
-        filter_properties = [f'(object_type = :ot OR begins_with(identifier_stem, :stub))']
+        filter_properties = [f'(object_type = :ot OR begins_with(identifier, :stub))']
         expression_names = {}
         expression_values = {
             ':ot': {'S': f'{object_type}'},
