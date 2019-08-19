@@ -6,7 +6,7 @@ from threading import Thread
 
 import boto3
 
-from toll_booth.obj.gql.gql_client import GqlClient
+from toll_booth.obj.index.index_manager import IndexManager
 from toll_booth.obj.progress_tracking import Overseer
 from toll_booth.obj.regulators import ObjectRegulator, EdgeRegulator
 from toll_booth.obj.regulators.arbiter import RuleArbiter
@@ -95,21 +95,20 @@ class AioMaster:
             self._potential_queue.put({'potential_vertex': vertex, 'rule_entry': rule_entry})
 
     def _check_for_existing_vertexes(self):
-        gql_endpoint = _lookup_resource('graph_api')
-        gql_client = GqlClient(gql_endpoint)
+        index_manager = IndexManager()
         while True:
             potential_vertex_data = self._potential_queue.get()
             if potential_vertex_data is None:
                 return
             potential_vertex = potential_vertex_data['potential_vertex']
             rule_entry = potential_vertex_data['rule_entry']
-            results = self.__check_for_existing_vertexes(potential_vertex, rule_entry, gql_client)
+            results = self.__check_for_existing_vertexes(potential_vertex, rule_entry, index_manager)
             stage_name = f'check_for_existing_vertexes_{potential_vertex.internal_id}_{rule_entry.edge_type}'
             stage_results = {'status': results['status'], 'existing_vertexes': [x.for_gql for x in results['vertexes']]}
             self._overseer.mark_stage_completed(stage_name, stage_results)
             self._potential_queue.task_done()
 
-    def __check_for_existing_vertexes(self, potential_vertex, rule_entry, gql_client):
+    def __check_for_existing_vertexes(self, potential_vertex, rule_entry, index_manager: IndexManager):
         edge_type = rule_entry.edge_type
         edge_schema_entry = self._schema[edge_type]
         identified_kwargs = {
@@ -121,7 +120,8 @@ class AioMaster:
             identified_kwargs['identified_vertex'] = potential_vertex
             self._identified_queue.put(identified_kwargs)
             return {'vertexes': [potential_vertex], 'status': 'fully_ready_to_graph'}
-        found_vertexes = gql_client.check_for_existing_vertexes(potential_vertex)
+        found_vertexes = index_manager.find_potential_vertexes(
+            potential_vertex.object_type, potential_vertex.vertex_properties)
         if found_vertexes:
             results = []
             for identified_vertex in found_vertexes:

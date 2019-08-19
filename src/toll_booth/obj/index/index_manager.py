@@ -1,18 +1,15 @@
 import logging
 import os
-from typing import Union, Dict, List
+import rapidjson
+from multiprocessing.dummy import Pool as ThreadPool
+from typing import Dict, List
 
 import boto3
-import rapidjson
 from algernon.serializers import ExplosionJson
 from aws_xray_sdk.core import xray_recorder
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
-from multiprocessing.dummy import Pool as ThreadPool
-
-
-from toll_booth.obj.data_objects.graph_objects import VertexData, EdgeData
 from toll_booth.obj.index.indexes import UniqueIndex
 from toll_booth.obj.index.troubles import MissingIndexedPropertyException, UniqueIndexViolationException
 
@@ -83,7 +80,8 @@ class IndexManager:
         self._object_index = object_index
         self._internal_id_index = internal_id_index
         self._identifier_stem_index = identifier_stem_index
-        self._table = boto3.resource('dynamodb').Table(self._table_name)
+        session = boto3.session.Session()
+        self._table = session.resource('dynamodb').Table(self._table_name)
         self._indexes = indexes
 
     @xray_recorder.capture()
