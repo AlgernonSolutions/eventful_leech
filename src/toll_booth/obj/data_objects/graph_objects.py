@@ -29,7 +29,7 @@ class VertexData(AlgObject):
     def __init__(self,
                  object_type: str,
                  internal_id: str,
-                 identifier_stem: Dict[str, str],
+                 identifier: Dict[str, str],
                  id_value: Dict[str, str],
                  local_properties: List[Dict[str, str]] = None,
                  stored_properties: List[Dict[str, str]] = None,
@@ -42,7 +42,7 @@ class VertexData(AlgObject):
             sensitive_properties = []
         self._object_type = object_type
         self._internal_id = internal_id
-        self._identifier_stem = identifier_stem
+        self._identifier = identifier
         self._id_value = id_value
         self._local_properties = local_properties
         self._stored_properties = stored_properties
@@ -65,9 +65,9 @@ class VertexData(AlgObject):
         id_value = gql_dict['id_value']
         del(id_value['__typename'])
         json_dict['id_value'] = id_value
-        identifier_stem = gql_dict['identifier_stem']
-        del(identifier_stem['__typename'])
-        json_dict['identifier'] = identifier_stem
+        identifier = gql_dict['identifier']
+        del(identifier['__typename'])
+        json_dict['identifier'] = identifier
         object_properties_data = gql_dict['vertex_properties']
         for entry in object_properties_data:
             property_class, object_property = _parse_gql_property(entry)
@@ -101,8 +101,8 @@ class VertexData(AlgObject):
         return set_property_data_type(**self._id_value)
 
     @property
-    def identifier_stem(self) -> str:
-        return set_property_data_type(**self._identifier_stem)
+    def identifier(self) -> str:
+        return set_property_data_type(**self._identifier)
 
     @property
     def vertex_properties(self):
@@ -119,16 +119,16 @@ class VertexData(AlgObject):
     def for_gql(self):
         return {
             'id_value': self._id_value,
-            'identifier_stem': self._identifier_stem,
+            'identifier': self._identifier,
             'internal_id': self.internal_id,
             'vertex_type': self._object_type,
             'vertex_properties': self.vertex_properties
         }
 
     @property
-    def is_identifier_stem_set(self):
+    def is_identifier_set(self):
         try:
-            identifier_stem = IdentifierStem.from_raw(self.identifier_stem)
+            identifier_stem = IdentifierStem.from_raw(self.identifier)
             if not isinstance(identifier_stem, IdentifierStem):
                 return False
             return True
@@ -157,7 +157,7 @@ class VertexData(AlgObject):
         if item == 'id_value':
             return self.id_value
         if item == 'identifier':
-            return self.identifier_stem
+            return self.identifier
         return set_property_data_type(**self.get_vertex_property('local_properties', item))
 
     def is_schema_complete(self, schema_entry: SchemaVertexEntry):
@@ -179,7 +179,7 @@ class VertexData(AlgObject):
 
     def is_identifiable(self, schema_entry: SchemaVertexEntry):
         try:
-            identifier_stem = IdentifierStem.from_raw(self.identifier_stem)
+            identifier_stem = IdentifierStem.from_raw(self.identifier)
         except AttributeError:
             return False
         if not isinstance(self._internal_id, str):
@@ -263,7 +263,7 @@ class EdgeData(VertexData):
             'edge_label': self.object_type,
             'internal_id': self.internal_id,
             'id_value': self._id_value,
-            'identifier': self._identifier_stem,
+            'identifier': self._identifier,
             'source_vertex_internal_id': self._source_vertex_internal_id,
             'target_vertex_internal_id': self._target_vertex_internal_id,
             'edge_properties': self.edge_properties

@@ -53,8 +53,8 @@ class GqlClient:
     def check_for_existing_vertexes(self, potential_vertex: VertexData) -> List[VertexData]:
         object_type = potential_vertex.object_type
         vertex_properties = [GqlSearchProperty(**x) for x in potential_vertex.local_properties]
-        if potential_vertex.is_identifier_stem_set:
-            identifier_stem = potential_vertex.identifier_stem
+        if potential_vertex.is_identifier_set:
+            identifier_stem = potential_vertex.identifier
             existing_vertexes = self.list_vertexes(identifier_stem, object_type, vertex_properties)
             return _generate_vertex_data(existing_vertexes)
         existing_vertexes = self.find_vertexes(object_type, vertex_properties)

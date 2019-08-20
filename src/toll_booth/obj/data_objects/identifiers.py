@@ -37,7 +37,7 @@ class IdentifierStem(AlgObject):
 
     @classmethod
     def for_stub(cls, stub_vertex):
-        identifier_stem = stub_vertex.identifier_stem
+        identifier_stem = stub_vertex.identifier
         try:
             identifier_stem = IdentifierStem.from_raw(identifier_stem)
             return identifier_stem
