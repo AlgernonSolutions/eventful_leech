@@ -19,6 +19,7 @@ class TestTasks:
 
     @pytest.mark.aio
     def test_aio(self, aio_event):
+        os.environ['INDEX_TABLE_NAME'] = 'Indexes'
         aio_event = rebuild_event(aio_event)
         results = leech(**aio_event)
         assert results

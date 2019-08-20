@@ -344,7 +344,7 @@ def _read_test_event(event_name):
         return event
 
 
-@pytest.fixture(params=['leech_start'])
+@pytest.fixture(params=['leech_event'])
 def aio_event(request):
     return _read_test_event(request.param)
 

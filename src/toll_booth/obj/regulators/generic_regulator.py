@@ -152,7 +152,7 @@ class ObjectRegulator:
         vertex_data = VertexData.from_source_data({
             'object_type': self._schema_entry.object_type,
             'internal_id': internal_id,
-            'identifier_stem': identifier_stem,
+            'identifier': identifier_stem,
             'id_value': id_value,
             'object_properties': object_properties,
         })
