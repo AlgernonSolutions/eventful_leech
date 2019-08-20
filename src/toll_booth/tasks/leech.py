@@ -7,7 +7,7 @@ from toll_booth.obj.aio import AioMaster
 from toll_booth.obj.schemata.schema import Schema
 
 
-# @xray_recorder.capture()
+@xray_recorder.capture()
 def leech(object_type: str,
           identifier: str,
           id_value: int,
