@@ -41,17 +41,16 @@ class TestTasks:
 
     @pytest.mark.push_s3
     def test_s3_push(self, test_push_event):
-        with patch('toll_booth.tasks.push_s3._check_for_object') as mock_check:
+        with patch('toll_booth.tasks.push_to_s3._check_for_object') as mock_check:
             mock_check.return_value = False
             os.environ['INDEX_TABLE_NAME'] = 'Indexes'
             push_kwargs = {
-                'bucket_name': 'algernonsolutions-leech-dev',
+                'bucket_name': 'algernonsolutions-leech-prod',
                 'base_file_key': 'bulk'
             }
-            for entry in test_push_event['leech']:
-                entry.update(push_kwargs)
-                results = push_s3(**entry)
-                assert results
+            push_kwargs.update(test_push_event)
+            results = push_s3(**push_kwargs)
+            assert results
 
     @pytest.mark.push_events
     def test_events_push(self, test_push_event):

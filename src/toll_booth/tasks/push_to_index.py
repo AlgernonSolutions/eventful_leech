@@ -45,11 +45,11 @@ def _collect_object_properties(scalar, is_edge=False):
 
 def _format_object_for_index(scalar, is_edge=False):
     object_type_property = 'edge_label' if is_edge else 'vertex_type'
-    identifier_stem = scalar['identifier_stem']['property_value']
+    identifier = scalar['identifier']['property_value']
     id_value = scalar['id_value']['property_value']
     object_for_index = {
         'sid_value': str(id_value),
-        'identifier': str(identifier_stem),
+        'identifier': str(identifier),
         'internal_id': str(scalar['internal_id']),
         'id_value': id_value,
         'object_type': scalar[object_type_property]
