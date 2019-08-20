@@ -56,7 +56,7 @@ def _derive_local_property_value(object_property) -> str:
 def create_edge_command(internal_id: str,
                         edge_label: str,
                         id_value,
-                        identifier_stem,
+                        identifier,
                         source_vertex_internal_id: str,
                         target_vertex_internal_id: str,
                         edge_properties=None) -> str:
@@ -65,7 +65,7 @@ def create_edge_command(internal_id: str,
     for property_type, type_properties in edge_properties.items():
         collected_properties.extend(type_properties)
     collected_properties.append(id_value)
-    collected_properties.append(identifier_stem)
+    collected_properties.append(identifier)
     command = f"g" \
         f".E('{internal_id}')" \
         f".fold()" \
@@ -80,14 +80,14 @@ def create_edge_command(internal_id: str,
 def create_vertex_command(internal_id: str,
                           vertex_type: str,
                           id_value,
-                          identifier_stem,
+                          identifier,
                           vertex_properties) -> str:
     import re
     collected_properties = []
     for property_type, type_properties in vertex_properties.items():
         collected_properties.extend(type_properties)
     collected_properties.append(id_value)
-    collected_properties.append(identifier_stem)
+    collected_properties.append(identifier)
     command = f"g" \
         f".V('{internal_id}')" \
         f".fold()" \
