@@ -74,7 +74,7 @@ class IndexManager:
             table_name = os.environ['INDEX_TABLE_NAME']
         object_index = UniqueIndex.for_object_index()
         internal_id_index = UniqueIndex.for_internal_id_index()
-        identifier_stem_index = UniqueIndex.for_identifier_stem_index()
+        identifier_stem_index = UniqueIndex.for_identifier_index()
         indexes = [object_index, internal_id_index, identifier_stem_index]
         self._table_name = table_name
         self._object_index = object_index

@@ -100,8 +100,7 @@ def _store_to_s3(bucket_name, base_file_key, scalar, is_edge=False):
             'details': {
                 'message': '',
                 'bucket_name': bucket_name,
-                'file_key': file_key,
-                'stored_object': object_for_s3
+                'file_key': file_key
             }
         }
 

@@ -1,8 +1,6 @@
 import os
 from typing import Union
 
-from toll_booth.obj.data_objects.graph_objects import VertexData, EdgeData
-
 
 class Index:
     """
@@ -84,7 +82,7 @@ class UniqueIndex(Index):
         if not partition_key_name:
             partition_key_name = os.getenv('OBJECT_INDEX_PARTITION_KEY_NAME', 'sid_value')
         if not hash_key_name:
-            hash_key_name = os.getenv('OBJECT_INDEX_HASH_KEY_NAME', 'identifier_stem')
+            hash_key_name = os.getenv('OBJECT_INDEX_HASH_KEY_NAME', 'identifier')
         return cls(index_name, [partition_key_name, hash_key_name], ['*'])
 
     @classmethod
@@ -98,8 +96,8 @@ class UniqueIndex(Index):
         return cls(index_name, [internal_id_field_name], ['*'])
 
     @classmethod
-    def for_identifier_stem_index(cls,
-                                  index_name: str = None):
+    def for_identifier_index(cls,
+                             index_name: str = None):
         if not index_name:
-            index_name = os.getenv('IDENTIFIER_STEM_INDEX_NAME', 'identifier_stem_index')
-        return cls(index_name, ['identifier_stem', 'id_value'], ['*'])
+            index_name = os.getenv('IDENTIFIER_INDEX_NAME', 'identifier_index')
+        return cls(index_name, ['identifier', 'id_value'], ['*'])
