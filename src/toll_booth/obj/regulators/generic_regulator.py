@@ -22,7 +22,7 @@ type_map = {
 
 def _store_s3_property_value(entry_property, property_name, property_value, data_type, source_internal_id):
     bucket_name = _generate_s3_bucket_name(entry_property.stored['bucket_name_source'])
-    object_key = f'{source_internal_id}.{property_name}'
+    object_key = f'{property_name}/{source_internal_id}_{property_name}.json'
     s3_args = {
         'data_type': data_type,
         'bucket_name': bucket_name,

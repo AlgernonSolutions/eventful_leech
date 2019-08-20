@@ -50,6 +50,15 @@ class GqlClient:
         self._api_endpoint = api_endpoint
         self._connection = GqlDriver(api_endpoint)
 
+    def free_query(self, query_text):
+        query = "query test($query_text: String!){free_query(query_text: $query_text)}"
+        response = self._connection.send(query, {'query_text': query_text})
+        response_data = rapidjson.loads(response)
+        return response_data['data']['free_query']
+
+    def delete_vertex(self, internal_id):
+        command = "mutation delete($internal_id: ID!){delete_vertex(internal_id: $internal_id)}"
+
     def check_for_existing_vertexes(self, potential_vertex: VertexData) -> List[VertexData]:
         object_type = potential_vertex.object_type
         vertex_properties = [GqlSearchProperty(**x) for x in potential_vertex.local_properties]
@@ -61,13 +70,13 @@ class GqlClient:
         return _generate_vertex_data(existing_vertexes)
 
     def list_vertexes(self,
-                      identifier_stem: str,
+                      identifier: str,
                       object_type: str,
                       vertex_properties: List[GqlSearchProperty]) -> List[Dict]:
         existing_vertexes = []
         query = gql_queries.LIST_EXISTING_VERTEXES
         variables = {
-            'identifier_stem': identifier_stem,
+            'identifier': identifier,
             'object_type': object_type,
             'object_properties': [x.as_gql_variable for x in vertex_properties]
         }
