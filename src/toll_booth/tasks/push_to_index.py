@@ -69,8 +69,7 @@ def _index_object(index_manager: IndexManager, scalar, is_edge=False):
             'status': 'succeeded',
             'operation': 'index_object',
             'details': {
-                'message': '',
-                'indexed_object': result
+                'message': ''
             }
         }
     except UniqueIndexViolationException as e:
