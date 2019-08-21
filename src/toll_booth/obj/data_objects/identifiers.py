@@ -72,7 +72,7 @@ class IdentifierStem(AlgObject):
     def __str__(self):
         if not self._identifiers:
             return f'#{self._graph_type}#{self._object_type}#'
-        return f'''#{self._graph_type}#{self._object_type}{"#".join(self._identifiers)}#'''
+        return f'''#{self._graph_type}#{self._object_type}#{"#".join(self._identifiers)}#'''
 
 
 class MissingObjectProperty(AlgObject):
