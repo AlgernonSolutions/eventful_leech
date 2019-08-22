@@ -60,9 +60,18 @@ class PushResults:
     @property
     def expression_attribute_values(self):
         attribute_values = {}
+
+        def _replace_empty_strings(stage_results):
+            for key, value in stage_results.items():
+                if value == '':
+                    stage_results[key] = None
+                if isinstance(value, dict):
+                    _replace_empty_strings(value)
+            return stage_results
+
         for pointer, push_result in enumerate(self._push_results):
             attribute_values[f':{pointer}'] = {
-                'stage_results': push_result.stage_results,
+                'stage_results': _replace_empty_strings(push_result.stage_results),
                 'completed_at': push_result.push_time
             }
         return attribute_values
