@@ -11,6 +11,12 @@ from toll_booth.tasks import leech, push_graph, push_index, push_s3, push_event
 @pytest.mark.tasks_integration
 @pytest.mark.usefixtures('integration_environment')
 class TestTasks:
+    @pytest.mark.mark_push_i
+    def test_mark_push_complete(self, mark_push_event, mock_context):
+        event = {'task_name': 'mark_push_complete', 'task_kwargs': mark_push_event}
+        results = handler(event, mock_context)
+        assert results
+
     @pytest.mark.handler
     def test_handler(self, aio_event, mock_context):
         event = {'task_name': 'leech', 'task_kwargs': aio_event}

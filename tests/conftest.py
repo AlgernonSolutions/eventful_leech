@@ -11,6 +11,11 @@ from toll_booth.obj.schemata.schema import Schema
 
 
 @pytest.fixture
+def mark_push_event():
+    return _read_test_event('mark_push')
+
+
+@pytest.fixture
 def fire_hose_event():
     return _read_test_event('fire_hose_event_2')
 

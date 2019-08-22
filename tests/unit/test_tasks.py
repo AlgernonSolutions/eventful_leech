@@ -1,15 +1,26 @@
-import os
+from unittest.mock import patch, MagicMock
 
 import pytest
-import rapidjson
+from algernon import ajson
 
 from toll_booth import handler
-from algernon import ajson
 
 
 @pytest.mark.tasks
 @pytest.mark.usefixtures('unit_environment')
 class TestTasks:
+    @pytest.mark.mark_push
+    def test_mark_push_complete(self, mark_push_event, mock_context):
+        with patch('toll_booth.tasks.mark_push.boto3.resource') as mock_dynamo:
+            mock_resource = MagicMock()
+            mock_table = MagicMock()
+            mock_resource.Table = mock_table
+            mock_dynamo.return_value = mock_resource
+            event = {'task_name': 'mark_push_complete', 'task_kwargs': mark_push_event}
+            results = handler(event, mock_context)
+            assert results is None
+            assert mock_table.update_item.called
+
     @pytest.mark.tasks_generate_source_vertex
     def test_generate_source_vertex(self, source_vertex_task_integration_event, mock_context, mocks):
         results = handler(source_vertex_task_integration_event, mock_context)

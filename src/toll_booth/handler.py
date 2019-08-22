@@ -30,7 +30,7 @@ def _load_config(variable_names):
 
 
 @lambda_logged
-@xray_recorder.capture()
+#@xray_recorder.capture()
 def handler(event, context):
     logging.info(f'started a call for a leech task: {event}/{context}')
     _load_config(ENVIRON_VARIABLES)
