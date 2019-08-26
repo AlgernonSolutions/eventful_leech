@@ -10,6 +10,7 @@ from aws_xray_sdk.core import xray_recorder
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
+from toll_booth.obj.data_objects.graph_objects import VertexData
 from toll_booth.obj.index.indexes import UniqueIndex
 from toll_booth.obj.index.troubles import MissingIndexedPropertyException, UniqueIndexViolationException
 
@@ -38,7 +39,8 @@ def _generate_gql_vertex(dynamo_record):
         '__typename': 'Vertex',
         'internal_id': vertex_dict['internal_id'],
         'vertex_type': vertex_dict['object_type'],
-        'vertex_properties': []
+        'vertex_properties': [],
+        'object_type': vertex_dict['object_type']
     }
     for property_name, vertex_property in vertex_dict.items():
         if property_name in excluded_entries:
@@ -52,7 +54,7 @@ def _generate_gql_vertex(dynamo_record):
             })
             continue
         potential_vertex['vertex_properties'].append(_generate_gql_property(property_name, vertex_property))
-    return potential_vertex
+    return VertexData.from_gql(potential_vertex)
 
 
 class IndexManager:

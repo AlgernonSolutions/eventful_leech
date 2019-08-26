@@ -15,12 +15,14 @@ def _parse_gql_property(gql_property_data: Dict[str, str]) -> Tuple[str, Dict[st
     if property_type == 'LocalPropertyValue':
         return 'local_properties', gql_property_data
     if property_type == 'SensitivePropertyValue':
-        gql_property_data['data_type'] = gql_property_data['sensitive_data_type']
-        del(gql_property_data['sensitive_data_type'])
+        if 'sensitive_data_type' in gql_property_data:
+            gql_property_data['data_type'] = gql_property_data['sensitive_data_type']
+            del(gql_property_data['sensitive_data_type'])
         return 'sensitive_properties', gql_property_data
     if property_type == 'StoredPropertyValue':
-        gql_property_data['data_type'] = gql_property_data['stored_data_type']
-        del(gql_property_data['stored_data_type'])
+        if 'stored_data_type' in gql_property_data:
+            gql_property_data['data_type'] = gql_property_data['stored_data_type']
+            del(gql_property_data['stored_data_type'])
         return 'stored_properties', gql_property_data
     return property_type, gql_property_data
 
@@ -69,7 +71,7 @@ class VertexData(AlgObject):
         del(identifier['__typename'])
         json_dict['identifier'] = identifier
         object_properties_data = gql_dict['vertex_properties']
-        for entry in object_properties_data:
+        for entry in [x['property_value'] for x in object_properties_data]:
             property_class, object_property = _parse_gql_property(entry)
             if property_class not in json_dict:
                 json_dict[property_class] = []
