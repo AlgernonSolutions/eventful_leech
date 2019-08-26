@@ -71,7 +71,7 @@ class VertexData(AlgObject):
         del(identifier['__typename'])
         json_dict['identifier'] = identifier
         object_properties_data = gql_dict['vertex_properties']
-        for entry in [x['property_value'] for x in object_properties_data]:
+        for entry in object_properties_data:
             property_class, object_property = _parse_gql_property(entry)
             if property_class not in json_dict:
                 json_dict[property_class] = []

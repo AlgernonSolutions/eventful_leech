@@ -46,14 +46,17 @@ def _generate_gql_vertex(dynamo_record):
         if property_name in excluded_entries:
             continue
         if property_name == 'id_value':
-            potential_vertex[property_name] = _generate_gql_property(property_name, vertex_property)
+            vertex_property['property_name'] = property_name
+            potential_vertex[property_name] = vertex_property
             continue
         if property_name == 'identifier':
-            potential_vertex[property_name] = _generate_gql_property(property_name, {
-                'data_type': 'S', '__typename': 'LocalPropertyValue', 'property_value': vertex_property
-            })
+            potential_vertex[property_name] = {
+                'data_type': 'S', '__typename': 'LocalPropertyValue',
+                'property_value': vertex_property, 'property_name': 'identifier'
+            }
             continue
-        potential_vertex['vertex_properties'].append(_generate_gql_property(property_name, vertex_property))
+        vertex_property['property_name'] = property_name
+        potential_vertex['vertex_properties'].append(vertex_property)
     return VertexData.from_gql(potential_vertex)
 
 
