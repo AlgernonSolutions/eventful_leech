@@ -14,18 +14,17 @@ from toll_booth.obj.index.indexes import UniqueIndex
 from toll_booth.obj.index.troubles import MissingIndexedPropertyException, UniqueIndexViolationException
 
 
-def _generate_gql_property(record_entry):
-    record_property_value = record_entry['property_value']
+def _generate_gql_property(property_name, record_entry):
     property_value = {
-        '__typename': record_property_value['property_type']
+        '__typename': record_entry['__typename']
     }
-    for property_name, property_entry in record_property_value.items():
-        if property_name == 'property_type':
+    for property_name, property_entry in record_entry.items():
+        if property_name == '__typename':
             continue
         property_value[property_name] = property_entry
     return {
         '__typename': 'ObjectProperty',
-        'property_name': record_entry['property_name'],
+        'property_name': property_name,
         'property_value': property_value
     }
 
@@ -45,17 +44,14 @@ def _generate_gql_vertex(dynamo_record):
         if property_name in excluded_entries:
             continue
         if property_name == 'id_value':
-            potential_vertex[property_name] = _generate_gql_property(vertex_property)
+            potential_vertex[property_name] = _generate_gql_property(property_name, vertex_property)
             continue
-        if property_name == 'identifier_stem':
-            potential_vertex[property_name] = _generate_gql_property({
-                'property_name': 'identifier_stem',
-                'property_value': {
-                    'data_type': 'S', 'property_type': 'LocalPropertyValue', 'property_value': vertex_property
-                }
+        if property_name == 'identifier':
+            potential_vertex[property_name] = _generate_gql_property(property_name, {
+                'data_type': 'S', '__typename': 'LocalPropertyValue', 'property_value': vertex_property
             })
             continue
-        potential_vertex['vertex_properties'].append(_generate_gql_property(vertex_property))
+        potential_vertex['vertex_properties'].append(_generate_gql_property(property_name, vertex_property))
     return potential_vertex
 
 
@@ -107,7 +103,7 @@ class IndexManager:
                     raise MissingIndexedPropertyException(index.index_name, index.indexed_fields, missing_properties)
         return self._index_object(scalar_object)
 
-    @xray_recorder.capture()
+    #@xray_recorder.capture()
     def find_potential_vertexes(self,
                                 object_type: str,
                                 vertex_properties) -> [Dict]:
@@ -227,19 +223,16 @@ class IndexManager:
             ':ot': {'S': f'{object_type}'},
             ':stub': {'S': '#vertex#stub#'},
         }
+        if 'local_properties' in vertex_properties:
+            vertex_properties = vertex_properties['local_properties']
         for pointer, vertex_property in enumerate(vertex_properties):
             filter_properties.append(f'#{pointer} = :property{pointer}')
-            expression_names[f'#{pointer}'] = vertex_property.property_name
+            expression_names[f'#{pointer}'] = vertex_property['property_name']
             expression_values[f':property{pointer}'] = {
                 'M': {
-                    'property_name': {'S': vertex_property.property_name},
-                    'property_value': {
-                        'M': {
-                            'data_type': {'S': vertex_property.property_value.data_type},
-                            'property_value': {'S': vertex_property.property_value.search_property_value},
-                            'property_type': {'S': 'LocalPropertyValue'}
-                        }
-                    }
+                    '__typename': {'S': 'LocalPropertyValue'},
+                    'data_type': {'S': vertex_property['data_type']},
+                    'property_value': {'S': vertex_property['property_value']}
                 }
             }
         scan_kwargs = {
