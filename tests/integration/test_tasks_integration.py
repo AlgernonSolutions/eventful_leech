@@ -41,9 +41,8 @@ class TestTasks:
     @pytest.mark.push_index
     def test_index_push(self, test_push_event):
         os.environ['INDEX_TABLE_NAME'] = 'Indexes'
-        for entry in test_push_event['leech']:
-            results = push_index(**entry)
-            assert results
+        results = push_index(**test_push_event)
+        assert results
 
     @pytest.mark.push_s3
     def test_s3_push(self, test_push_event):

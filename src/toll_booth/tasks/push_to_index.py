@@ -51,7 +51,7 @@ def _format_object_for_index(scalar, is_edge=False):
         'sid_value': str(id_value),
         'identifier': str(identifier),
         'internal_id': str(scalar['internal_id']),
-        'id_value': _format_object_property('local_property', id_value),
+        'id_value': _format_object_property('local_properties', id_value),
         'object_type': scalar[object_type_property]
     }
     if isinstance(id_value, int) or isinstance(id_value, Decimal):
@@ -91,7 +91,7 @@ def _index_object(index_manager: IndexManager, scalar, is_edge=False):
         }
 
 
-@xray_recorder.capture()
+# @xray_recorder.capture()
 def push_index(leech, **kwargs):
     logging.info(f'received a call to the index_handler: {leech}, {kwargs}')
     index_results = {}
