@@ -106,9 +106,9 @@ class IndexManager:
                 missing_properties = index.check_for_missing_object_properties(scalar_object)
                 if missing_properties:
                     raise MissingIndexedPropertyException(index.index_name, index.indexed_fields, missing_properties)
-        return self._index_object(scalar_object)
+        return self._index_object(scalar_object, is_edge)
 
-    #@xray_recorder.capture()
+    @xray_recorder.capture()
     def find_potential_vertexes(self,
                                 object_type: str,
                                 vertex_properties) -> [Dict]:
@@ -158,7 +158,7 @@ class IndexManager:
         if existing_object_key:
             self._table.delete_item(Key=existing_object_key)
 
-    def _index_object(self, scalar_object):
+    def _index_object(self, scalar_object, is_edge):
         """Adds an object to the index per the schema
 
         Args:
@@ -170,14 +170,13 @@ class IndexManager:
             UniqueIndexViolationException: The object to be graphed is already in the index
 
         """
-        try:
+        scalar_object['object_class'] = 'Vertex'
+        if is_edge:
             scalar_object.update({
                 'from_internal_id': scalar_object.source_vertex_internal_id,
                 'to_internal_id': scalar_object.target_vertex_internal_id,
                 'object_class': 'Edge'
             })
-        except AttributeError:
-            scalar_object['object_class'] = 'Vertex'
         index_kwargs = {
             'Item': scalar_object,
             'ReturnValues': 'ALL_OLD',

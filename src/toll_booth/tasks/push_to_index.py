@@ -67,7 +67,7 @@ def _format_object_for_index(scalar, is_edge=False):
 def _index_object(index_manager: IndexManager, scalar, is_edge=False):
     index_object = _format_object_for_index(scalar, is_edge)
     try:
-        result = index_manager.index_object(index_object)
+        index_manager.index_object(index_object, is_edge)
         return {
             'status': 'succeeded',
             'operation': 'index_object',
@@ -94,7 +94,7 @@ def _index_object(index_manager: IndexManager, scalar, is_edge=False):
         }
 
 
-# @xray_recorder.capture()
+@xray_recorder.capture()
 def push_index(leech, **kwargs):
     logging.info(f'received a call to the index_handler: {leech}, {kwargs}')
     index_results = {}
