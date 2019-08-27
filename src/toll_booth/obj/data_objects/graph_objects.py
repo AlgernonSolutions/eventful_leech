@@ -205,10 +205,10 @@ class EdgeData(VertexData):
                  local_properties: List[Dict[str, str]] = None,
                  stored_properties: List[Dict[str, str]] = None,
                  sensitive_properties: List[Dict[str, str]] = None):
-        identifier_stem = {
+        identifier = {
             'data_type': 'S',
-            'property_name': 'identifier_stem',
-            'property_value': str(IdentifierStem.from_raw(f'#edge#{object_type}#'))
+            'property_name': 'identifier',
+            'property_value': f'#edge#{object_type}#'
         }
         id_value = {
             'data_type': 'S',
@@ -216,7 +216,7 @@ class EdgeData(VertexData):
             'property_value': internal_id
         }
         vertex_kwargs = {
-            'object_type': object_type, 'internal_id': internal_id, 'identifier': identifier_stem,
+            'object_type': object_type, 'internal_id': internal_id, 'identifier': identifier,
             'id_value': id_value, 'local_properties': local_properties,
             'stored_properties': stored_properties, 'sensitive_properties': sensitive_properties}
         super().__init__(**vertex_kwargs)
