@@ -1,14 +1,11 @@
-import os
-from datetime import datetime
 from decimal import Decimal
 from typing import Union, Dict, Any
 
 import dateutil
 
-from toll_booth.obj.data_objects import MissingObjectProperty, InternalId, IdentifierStem, SensitivePropertyValue
+from toll_booth.obj.data_objects import MissingObjectProperty, InternalId, IdentifierStem
 from toll_booth.obj.data_objects.graph_objects import VertexData
-from toll_booth.obj.data_objects.object_properties.stored_property import S3StoredPropertyValue
-from toll_booth.obj.schemata.entry_property import SchemaPropertyEntry, EdgePropertyEntry
+from toll_booth.obj.index import mission
 from toll_booth.obj.schemata.schema_entry import SchemaVertexEntry, SchemaEdgeEntry
 from toll_booth.obj.utils import set_property_data_type
 
@@ -18,90 +15,6 @@ type_map = {
     'String': 'S',
     'Boolean': 'B'
 }
-
-
-def _store_s3_property_value(entry_property, property_name, property_value, data_type, source_internal_id):
-    bucket_name = _generate_s3_bucket_name(entry_property.stored['bucket_name_source'])
-    object_key = f'{property_name}/{source_internal_id}_{property_name}.json'
-    s3_args = {
-        'data_type': data_type,
-        'bucket_name': bucket_name,
-        'object_key': object_key,
-        'object_data': property_value
-    }
-    s3_data = S3StoredPropertyValue.store(**s3_args)
-    gql_entry = {
-        'data_type': data_type,
-        'property_name': property_name,
-        'storage_class': 's3',
-        'storage_uri': s3_data.storage_uri
-    }
-    return gql_entry
-
-
-def _generate_s3_bucket_name(bucket_name_source):
-    """ generate the bucket_name used to hold StoredObjectProperty using the S3 storage_class
-
-    when storing objects to S3, we have to specify a bucket_name. this name can be provided statically by the schema,
-        or dynamically by a named environment_variable
-
-    Args:
-        bucket_name_source:
-
-    Returns:
-
-    """
-    name_source = bucket_name_source['source']
-    if name_source == 'environment':
-        bucket_name = os.environ[bucket_name_source['environment_variable_name']]
-        return bucket_name
-    if name_source == 'static':
-        return bucket_name_source['bucket_name']
-
-
-def _generate_object_property(property_name: str,
-                              entry_property: Union[SchemaPropertyEntry, EdgePropertyEntry],
-                              property_value: Union[str, float, Decimal, int, datetime, None],
-                              source_internal_id: str = None):
-    """ perform storage specific tasks on the ObjectProperties
-
-    not all objects are stored directly onto the graph, so in this function we check the schema and if needed,
-        utilize storage specific objects to store these speciality objects before graphing them
-
-    Args:
-        property_name:
-        entry_property:
-        property_value:
-        source_internal_id:
-
-    Returns:
-
-    """
-    data_type = type_map[entry_property.property_data_type]
-    if isinstance(property_value, MissingObjectProperty):
-        return 'missing', None
-    if entry_property.sensitive:
-        sensitive_entry = SensitivePropertyValue(source_internal_id, property_name, property_value)
-        pointer = sensitive_entry.store()
-        gql_entry = {
-            'data_type': data_type,
-            'property_name': property_name,
-            'pointer': pointer
-        }
-        return 'sensitive_properties', gql_entry
-    if entry_property.is_stored:
-        storage_class = entry_property.stored['storage_class']
-        if storage_class == 's3':
-            s3_args = (entry_property, property_name, property_value, data_type, source_internal_id)
-            return 'stored_properties', _store_s3_property_value(*s3_args)
-        raise NotImplementedError(f'can not store {entry_property} per storage_class: {storage_class},'
-                                  f'this class is unknown to the system')
-    gql_entry = {
-        'data_type': data_type,
-        'property_name': property_name,
-        'property_value': str(property_value)
-    }
-    return 'local_properties', gql_entry
 
 
 class ObjectRegulator:
@@ -196,8 +109,8 @@ class ObjectRegulator:
         converted_properties = {}
         for property_name, entry_property in self._entry_properties_schema.items():
             object_property = object_properties[property_name]
-            property_type, property_value = _generate_object_property(
-                property_name, entry_property, object_property, internal_id)
+            property_type, property_value = mission.build_vertex_property(
+                property_name, object_property, entry_property, internal_id)
             if property_type == 'missing':
                 continue
             if property_type not in converted_properties:

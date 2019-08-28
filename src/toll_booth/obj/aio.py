@@ -121,7 +121,7 @@ class AioMaster:
             self._identified_queue.put(identified_kwargs)
             return {'vertexes': [potential_vertex], 'status': 'fully_ready_to_graph'}
         found_vertexes = index_manager.find_potential_vertexes(
-            potential_vertex.object_type, potential_vertex.vertex_properties)
+            potential_vertex.object_type, potential_vertex.vertex_properties, self._schema)
         if found_vertexes:
             results = []
             for identified_vertex in found_vertexes:

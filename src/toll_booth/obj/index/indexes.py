@@ -80,7 +80,7 @@ class UniqueIndex(Index):
         if not index_name:
             index_name = os.getenv('OBJECT_INDEX_NAME', 'leech_index')
         if not partition_key_name:
-            partition_key_name = os.getenv('OBJECT_INDEX_PARTITION_KEY_NAME', 'sid_value')
+            partition_key_name = os.getenv('OBJECT_INDEX_PARTITION_KEY_NAME', 'id_value')
         if not hash_key_name:
             hash_key_name = os.getenv('OBJECT_INDEX_HASH_KEY_NAME', 'identifier')
         return cls(index_name, [partition_key_name, hash_key_name], ['*'])

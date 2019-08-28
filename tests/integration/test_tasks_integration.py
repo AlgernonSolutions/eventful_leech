@@ -41,6 +41,8 @@ class TestTasks:
     @pytest.mark.push_index
     def test_index_push(self, test_push_event):
         os.environ['INDEX_TABLE_NAME'] = 'Indexes'
+        os.environ['SENSITIVE_TABLE_NAME'] = 'Sensitives'
+        os.environ['ELASTIC_HOST'] = 'vpc-algernon-test-ankmhqkcdnx2izwfkwys67wmiq.us-east-1.es.amazonaws.com'
         results = push_index(**test_push_event)
         assert results
 

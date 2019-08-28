@@ -52,6 +52,10 @@ class SensitivePropertyValue:
     def sensitive_value(self):
         return self._sensitive_value
 
+    @property
+    def pointer(self):
+        return self._create_pointer()
+
     def _create_pointer(self):
         """ generates opaque pointer
 

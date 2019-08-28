@@ -3,8 +3,21 @@ import re
 import boto3
 
 from algernon import ajson
+from botocore.exceptions import ClientError
 
 from toll_booth.obj.utils import set_property_data_type
+
+
+def _check_for_object(bucket_name, object_key):
+    s3_resource = boto3.resource('s3')
+    s3_object = s3_resource.Object(bucket_name, object_key)
+    try:
+        s3_object.load()
+        return True
+    except ClientError as e:
+        if e.response['Error']['Code'] != '404':
+            raise e
+        return False
 
 
 class StoredPropertyValue:
@@ -48,6 +61,7 @@ class S3StoredPropertyValue(StoredPropertyValue):
         bucket_name = kwargs['bucket_name']
         object_key = kwargs['object_key']
         bucket = boto3.resource('s3').Bucket(bucket_name)
-        bucket.put_object(Key=object_key, Body=ajson.dumps(object_data))
+        if not _check_for_object(bucket_name, object_key):
+            bucket.put_object(Key=object_key, Body=ajson.dumps(object_data))
         storage_uri = f's3://{bucket_name}/{object_key}'
         return cls(data_type, 's3', storage_uri)

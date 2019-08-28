@@ -4,3 +4,6 @@ jsonref
 jsonschema
 requests
 moncrief>=2.2.2
+elasticsearch
+requests
+requests-aws4auth
