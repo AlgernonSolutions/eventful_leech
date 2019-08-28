@@ -13,15 +13,12 @@ class ElasticDriver:
     @classmethod
     def generate(cls, es_host):
         credentials = boto3.Session().get_credentials()
-        auth_args = [
-            credentials.access_key,
-            credentials.secret_key,
-            os.environ.get('AWS_REGION', 'us-east-1'),
-            'es'
-        ]
-        if credentials.token:
-            auth_args.append(credentials.token)
-        aws_auth = AWS4Auth(*auth_args)
+        region = os.environ.get('AWS_REGION', 'us-east-1')
+        if os.getenv('AWS_SESSION_TOKEN', None):
+            session_token = os.environ['AWS_SESSION_TOKEN']
+            auth = AWS4Auth(credentials.access_key, credentials.secret_key, region, 'es', session_token=session_token)
+            return cls(es_host, auth)
+        aws_auth = AWS4Auth(credentials.access_key, credentials.secret_key, region, 'es')
         return cls(es_host, aws_auth)
 
     @property
