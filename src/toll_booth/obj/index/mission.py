@@ -174,25 +174,25 @@ def set_data_type(data_type, property_value, for_search=False):
     raise RuntimeError(f'system is not equipped to handle property: {property_value} with data type: {data_type}')
 
 
-def format_object_property(property_type, object_property):
+def format_object_property(property_type, object_property, for_index=False):
     data_type = object_property['data_type']
     if property_type == 'stored_properties':
         storage_class = object_property['storage_class']
         storage_uri = object_property['storage_uri']
         if storage_class == 's3':
             property_value = aws_utils.retrieve_s3_property(storage_uri)
-            return set_data_type(data_type, property_value)
+            return set_data_type(data_type, property_value, for_search=for_index)
         raise RuntimeError(f'do not know how to retrieve for stored property class: {storage_class}')
     if property_type == 'sensitive_properties':
         property_value = aws_utils.retrieve_sensitive_property(object_property['pointer'])
-        return set_data_type(data_type, property_value)
+        return set_data_type(data_type, property_value, for_search=for_index)
     if property_type == 'local_properties':
         property_value = object_property['property_value']
-        return set_data_type(data_type, property_value)
+        return set_data_type(data_type, property_value, for_search=for_index)
     raise RuntimeError(f'do not know how to store object property type: {property_type}')
 
 
-def collect_object_properties(scalar, is_edge=False):
+def collect_object_properties(scalar, is_edge=False, for_index=False):
     collected_properties = {}
     object_property_name = 'edge_properties' if is_edge else 'vertex_properties'
     object_properties = scalar[object_property_name]
@@ -200,7 +200,7 @@ def collect_object_properties(scalar, is_edge=False):
         for type_property in type_properties:
             property_name = type_property['property_name']
             if property_name not in collected_properties:
-                indexed_property = format_object_property(property_type, type_property)
+                indexed_property = format_object_property(property_type, type_property, for_index=for_index)
                 collected_properties[property_name] = indexed_property
     return collected_properties
 
@@ -212,13 +212,13 @@ def format_object_for_index(scalar, is_edge=False):
     object_for_index = {
         'identifier': str(identifier),
         'internal_id': str(scalar['internal_id']),
-        'id_value': format_object_property('local_properties', id_value),
+        'id_value': format_object_property('local_properties', id_value, for_index=True),
         'object_type': scalar[object_type_property],
         'object_class': 'Edge' if is_edge else 'Vertex'
     }
     if is_edge:
         object_for_index['from_internal_id'] = scalar['source_vertex_internal_id']
         object_for_index['to_internal_id'] = scalar['target_vertex_internal_id']
-    object_properties = collect_object_properties(scalar, is_edge)
+    object_properties = collect_object_properties(scalar, is_edge, for_index=True)
     object_for_index.update(object_properties)
     return object_for_index
