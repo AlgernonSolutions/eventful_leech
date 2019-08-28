@@ -37,7 +37,7 @@ def _index_object(index_manager: IndexManager, scalar, is_edge=False):
         }
 
 
-# @xray_recorder.capture()
+@xray_recorder.capture('push_index')
 def push_index(leech, **kwargs):
     logging.info(f'received a call to the index_handler: {leech}, {kwargs}')
     index_results = {}
