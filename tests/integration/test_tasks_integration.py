@@ -5,12 +5,17 @@ import pytest
 from algernon import rebuild_event
 
 from toll_booth import handler
-from toll_booth.tasks import leech, push_graph, push_index, push_s3, push_event
+from toll_booth.tasks import leech, push_graph, push_index, push_s3, push_event, get_local_max
 
 
 @pytest.mark.tasks_integration
 @pytest.mark.usefixtures('integration_environment')
 class TestTasks:
+    @pytest.mark.get_max_i
+    def test_get_max_id_value(self):
+        results = get_local_max('PSI', 'Patient')
+        assert results
+
     @pytest.mark.mark_push_i
     def test_mark_push_complete(self, mark_push_event, mock_context):
         event = {'task_name': 'mark_push_complete', 'task_kwargs': mark_push_event}

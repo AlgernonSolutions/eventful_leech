@@ -39,3 +39,17 @@ class ElasticDriver:
 
     def search(self, index_name, query_body):
         return self.es_client.search(index_name, body={'query': query_body})
+
+    def get_max_id_value(self, id_source, object_type):
+        body = {
+            "aggs": {
+                "max_value": {
+                    "filter": {"term": {"id_source": id_source}},
+                    "aggs": {"top_value": {"max": {"field": "id_value"}}}
+                }
+            },
+            "size": 0
+        }
+        index_name = object_type.lower()
+        response = self.es_client.search(index=index_name, body=body)
+        return response['aggregations']['max_value']['top_value']['value']
