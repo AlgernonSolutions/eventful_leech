@@ -39,7 +39,7 @@ class IndexManager:
         self._elastic_driver = ElasticDriver.generate(elastic_host)
         self._indexes = indexes
 
-    # @xray_recorder.capture()
+    @xray_recorder.capture()
     def index_object(self, scalar_object, is_edge):
         """
 
@@ -62,7 +62,7 @@ class IndexManager:
                     raise MissingIndexedPropertyException(index.index_name, index.indexed_fields, missing_properties)
         return self._index_object(scalar_object, is_edge)
 
-    #@xray_recorder.capture()
+    @xray_recorder.capture()
     def find_potential_vertexes(self,
                                 object_type: str,
                                 vertex_properties,
