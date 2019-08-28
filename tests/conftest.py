@@ -291,9 +291,11 @@ def unit_environment():
 @pytest.fixture
 def integration_environment():
     os.environ['GRAPH_GQL_ENDPOINT'] = 'jlgmowxwofe33pdekndakyzx4i.appsync-api.us-east-1.amazonaws.com'
-    os.environ['ENCOUNTER_BUCKET'] = 'algernonsolutions-encounters-dev'
     os.environ['DEBUG'] = 'False'
-    os.environ['SENSITIVE_TABLE'] = 'Sensitives'
+    os.environ['INDEX_TABLE_NAME'] = 'Indexes'
+    os.environ['SENSITIVE_TABLE_NAME'] = 'Sensitives'
+    os.environ['ELASTIC_HOST'] = 'vpc-algernon-test-ankmhqkcdnx2izwfkwys67wmiq.us-east-1.es.amazonaws.com'
+    os.environ['ENCOUNTER_BUCKET_NAME'] = 'algernonsolutions-leech-prod'
 
 
 @pytest.fixture

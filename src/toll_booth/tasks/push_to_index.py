@@ -1,71 +1,14 @@
 import logging
-from decimal import Decimal
 
 from aws_xray_sdk.core import xray_recorder
 
 from toll_booth.obj.index.index_manager import IndexManager
+from toll_booth.obj.index.mission import format_object_for_index
 from toll_booth.obj.index.troubles import UniqueIndexViolationException
 
 
-def _format_object_property(property_type, object_property):
-    if property_type == 'stored_properties':
-        return {
-            'data_type': object_property['data_type'],
-            'storage_uri': object_property['storage_uri'],
-            'storage_class': object_property['storage_class'],
-            '__typename': 'StoredPropertyValue'
-        }
-    if property_type == 'sensitive_properties':
-        return {
-            'data_type': object_property['data_type'],
-            'pointer': object_property['pointer'],
-            '__typename': 'SensitivePropertyValue'
-        }
-    if property_type == 'local_properties':
-        return {
-            'data_type': object_property['data_type'],
-            'property_value': object_property['property_value'],
-            '__typename': 'LocalPropertyValue'
-        }
-    raise RuntimeError(f'do not know how to store object property type: {property_type}')
-
-
-def _collect_object_properties(scalar, is_edge=False):
-    collected_properties = {}
-    object_property_name = 'edge_properties' if is_edge else 'vertex_properties'
-    object_properties = scalar[object_property_name]
-    for property_type, type_properties in object_properties.items():
-        for type_property in type_properties:
-            property_name = type_property['property_name']
-            if property_name not in collected_properties:
-                indexed_property = _format_object_property(property_type, type_property)
-                collected_properties[property_name] = indexed_property
-    return collected_properties
-
-
-def _format_object_for_index(scalar, is_edge=False):
-    object_type_property = 'edge_label' if is_edge else 'vertex_type'
-    identifier = scalar['identifier']['property_value']
-    id_value = scalar['id_value']
-    sid_value = str(id_value)
-    if 'property_value' in id_value:
-        sid_value = str(id_value['property_value'])
-    object_for_index = {
-        'sid_value': sid_value,
-        'identifier': str(identifier),
-        'internal_id': str(scalar['internal_id']),
-        'id_value': _format_object_property('local_properties', id_value),
-        'object_type': scalar[object_type_property]
-    }
-    if isinstance(id_value, int) or isinstance(id_value, Decimal):
-        object_for_index['numeric_id_value'] = id_value
-    object_properties = _collect_object_properties(scalar, is_edge)
-    object_for_index.update(object_properties)
-    return object_for_index
-
-
 def _index_object(index_manager: IndexManager, scalar, is_edge=False):
-    index_object = _format_object_for_index(scalar, is_edge)
+    index_object = format_object_for_index(scalar, is_edge)
     try:
         index_manager.index_object(index_object, is_edge)
         return {

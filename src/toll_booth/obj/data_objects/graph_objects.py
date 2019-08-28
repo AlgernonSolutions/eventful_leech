@@ -1,10 +1,11 @@
+import ast
 from datetime import datetime
 from decimal import Decimal
 from typing import Dict, Union, List, Tuple
 
 from algernon import AlgObject
 
-from toll_booth.obj.data_objects.identifiers import IdentifierStem
+from toll_booth.obj.data_objects.identifiers import IdentifierStem, MissingObjectProperty
 from toll_booth.obj.schemata.schema_entry import SchemaVertexEntry
 from toll_booth.obj.utils import set_property_data_type
 
@@ -166,16 +167,24 @@ class VertexData(AlgObject):
         return self.is_identifiable(schema_entry) and self.is_properties_complete(schema_entry)
 
     def is_properties_complete(self, schema_entry: SchemaVertexEntry):
+        filtered_properties = {}
+        for property_class, vertex_properties in self.vertex_properties.items():
+            filtered = {x['property_name']: x for x in vertex_properties}
+            if property_class == 'local_properties':
+                filtered = {
+                    x['property_name']: x for x in vertex_properties
+                    if not isinstance(x['property_value'], MissingObjectProperty)}
+            filtered_properties[property_class] = filtered
         for property_name, property_schema in schema_entry.vertex_properties.items():
             if property_schema.sensitive:
-                if not self.contains_vertex_property('sensitive_properties', property_name):
+                if property_name not in filtered_properties['sensitive_properties']:
                     return False
                 continue
             if property_schema.is_stored:
-                if not self.contains_vertex_property('stored_properties', property_name):
+                if property_name not in filtered_properties['stored_properties']:
                     return False
                 continue
-            if not self.contains_vertex_property('local_properties', property_name):
+            if property_name not in filtered_properties['local_properties']:
                 return False
         return True
 
