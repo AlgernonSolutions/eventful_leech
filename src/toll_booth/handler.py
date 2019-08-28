@@ -7,6 +7,7 @@ from algernon.aws import lambda_logged
 from aws_xray_sdk.core import xray_recorder
 from toll_booth import tasks
 
+
 ENVIRON_VARIABLES = [
     'ALGERNON_BUCKET_NAME',
     'STORAGE_BUCKET_NAME',
@@ -14,7 +15,7 @@ ENVIRON_VARIABLES = [
     'GRAPH_GQL_ENDPOINT',
     'GRAPH_DB_ENDPOINT',
     'GRAPH_DB_READER_ENDPOINT',
-    'INDEX_TABLE_NAME',
+    'ELASTIC_HOST',
     'SENSITIVE_TABLE_NAME',
     'PROGRESS_TABLE_NAME',
     'FIRE_HOSE_NAME'
