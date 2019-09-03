@@ -23,6 +23,9 @@ ENVIRON_VARIABLES = [
 
 
 def _load_config(variable_names):
+    names = [x for x in variable_names if x not in os.environ]
+    if not names:
+        return
     client = boto3.client('ssm')
     response = client.get_parameters(Names=[x for x in variable_names])
     results = [(x['Name'], x['Value']) for x in response['Parameters']]
